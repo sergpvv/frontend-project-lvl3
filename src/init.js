@@ -18,7 +18,7 @@ export default () => {
     },
     feeds: [],
   };
-  const schema = yup.object().shape({
+  const schema = yup.mixed().object().shape({
     input: yup.string().url(),
   });
   document.querySelector(inputSelector)
