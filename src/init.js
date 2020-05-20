@@ -39,8 +39,9 @@ export default () => {
       e.preventDefault();
       state.form.processState = 'sending';
       axios.get([corsProxy, state.form.input].join(''))
-        .then((response) => {
+        .then(() => {
           // const feed = parse(response);
+          state.form.errors = [];
         })
         .catch((error) => {
           state.form.errors.push(error.message);
