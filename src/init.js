@@ -6,6 +6,7 @@ const corsProxy = 'https://cors-anywhere.herokuapp.com/';
 const formSelector = '.form';
 const inputSelector = '.form-control';
 const addButtonSelector = '.btn';
+const feedbackSelector = '.feedback';
 
 export default () => {
   const state = {
@@ -41,27 +42,42 @@ export default () => {
       axios.get([corsProxy, state.form.input].join(''))
         .then(() => {
           // const feed = parse(response);
-          state.form.errors = [];
+          setTimeout(() => {
+            state.form.processState = 'filling';
+            state.form.errors = [];
+          },
+          3000);
         })
         .catch((error) => {
           state.form.errors.push(error.message);
         });
     });
+  const isInvalid = () => state.form.validationState === 'invalid';
+  const removeChilds = (element) => {
+    while (element.firstChild && element.removeChild(element.firstChild));
+  };
   const addButton = document.querySelector(addButtonSelector);
-  watch(state.form, 'validationState', () => {
-    addButton.disabled = state.form.validationState === 'invalid';
-  });
-  watch(state.form, 'errors', () => {
-    const errorContainer = document.querySelector('.error-container');
-    if (errorContainer.childNodes) {
-      errorContainer.innerHTML = '';
+  addButton.disabled = isInvalid();
+
+  watch(state.form, 'processState', () => {
+    if (state.form.processState === 'sending') {
+      addButton.disabled = true;
     }
+  });
+
+  watch(state.form, 'validationState', () => {
+    addButton.disabled = isInvalid();
+  });
+
+  watch(state.form, 'errors', () => {
+    const feedback = document.querySelector(feedbackSelector);
+    removeChilds(feedback);
     if (state.form.errors.length > 0) {
       state.form.errors.forEach((error) => {
         const div = document.createElement('div');
         div.classList.add('alert', 'alert-danger', 'pb-0', 'pt-0', 'mb-1');
         div.innerHTML = `<strong>${error}</strong>`;
-        errorContainer.appendChild(div);
+        feedback.appendChild(div);
       });
     }
   });
