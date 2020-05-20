@@ -24,15 +24,15 @@ export default () => {
       .matches(
         /^((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
         'Enter correct url!',
-      ),
-    // .required('Enter correct url'),
+      )
+      .required('Enter correct url'),
   });
   document.querySelector(inputSelector)
     .addEventListener('input', ({ target }) => {
       state.form.processState = 'filling';
       state.form.input = target.value;
       schema
-        .validate(state.form, { strict: true, abortEarly: false })
+        .validate({ input: state.form.input }, { strict: true, abortEarly: false })
         .then(({ input }) => {
           state.form.validatonState = 'valid';
           state.errors = [`is correct:${input}`];
