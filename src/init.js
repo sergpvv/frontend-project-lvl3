@@ -21,7 +21,7 @@ export default () => {
     input: yup.string().required().url(),
   });
   document.querySelector(inputSelector)
-    .addEventListener('change', ({ target }) => {
+    .addEventListener('input', ({ target }) => {
       state.form.state = 'filling';
       state.form.input = target.value;
       schema
