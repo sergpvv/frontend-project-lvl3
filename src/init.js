@@ -3,8 +3,8 @@ import axios from 'axios';
 import { watch } from 'melanke-watchjs';
 
 const corsProxy = 'https://cors-anywhere.herokuapp.com/';
-const formSelector = '.form';
-const inputSelector = '.form-control';
+const formSelector = 'form';
+const inputSelector = 'input';
 const addButtonSelector = '.btn';
 const feedbackSelector = '.feedback';
 
@@ -76,7 +76,7 @@ export default () => {
       state.form.errors.forEach((error) => {
         const div = document.createElement('div');
         div.classList.add('alert', 'alert-danger', 'pb-0', 'pt-0', 'mb-1');
-        div.innerHTML = `<strong>${error}</strong>`;
+        div.textContent = error;
         feedback.appendChild(div);
       });
     }
