@@ -23,13 +23,13 @@ export default () => {
   });
   document.querySelector(inputSelector)
     .addEventListener('input', ({ target }) => {
-      state.form.state = 'filling';
+      state.form.processState = 'filling';
       state.form.input = target.value;
       schema
         .validate(state.form)
-        .then(() => {
+        .then((data) => {
           state.form.validatonState = 'valid';
-          state.errors = [];
+          state.errors = [`data:${data}`];
         })
         .catch(({ errors }) => {
           state.form.errors = [...errors];
