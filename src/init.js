@@ -1,12 +1,33 @@
 import * as yup from 'yup';
 import axios from 'axios';
-import { watch } from 'melanke-watchjs';
+import watch, { render } from './view';
 
 const corsProxy = 'https://cors-anywhere.herokuapp.com/';
 const formSelector = 'form';
 const inputSelector = 'input';
-const addButtonSelector = '.btn';
-const feedbackSelector = '.feedback';
+
+const parse = (str) => {
+  const parser = new DOMParser();
+  return parser.parseFromString(str, 'text/xml')
+    .then((data) => {
+      const title = data.querySelector('title').textContent;
+      const articles = [];
+      data.querySelectorAll('item').forEach((element) => {
+        articles.push(
+          `<article>
+          <img src="${element.querySelector('link').innerHTML}/image/large.png" alt="">
+          <h2>
+            <a href="${element.querySelector('link').innerHTML}" target="_blank" rel="noopener">
+              ${element.querySelector('title').innerHTML}
+            </a>
+          </h2>
+        </article>
+      `,
+        );
+      });
+      return { title, articles };
+    });
+};
 
 export default () => {
   const state = {
@@ -21,8 +42,6 @@ export default () => {
   const schema = yup.object().shape({
     inputUrl: yup.string().url().required(),
   });
-  const addButton = document.querySelector(addButtonSelector);
-  addButton.disabled = true;
   const isValid = (value) => value === 'valid';
   document.querySelector(inputSelector)
     .addEventListener('input', ({ target }) => {
@@ -40,8 +59,6 @@ export default () => {
           }
           console.log(state.form.validatonState);
           if (isValid(state.form.validatonState)) {
-            // state.form.errors.push(`rss feed url ${state.form.validatonState}`);
-            addButton.disabled = false;
             state.form.errors = [];
           }
           return schema.validate(state.form, { strict: true, abortEarly: false });
@@ -56,69 +73,26 @@ export default () => {
     .addEventListener('submit', (e) => {
       e.preventDefault();
       state.form.processState = 'sending';
-      axios.get([corsProxy, state.form.inputUrl].join(''))
-        .then(() => {
-          // const feed = parse(response);
+      const url = state.form.inputUrl;
+      axios.get([corsProxy, url].join(''))
+        .then(({ data }) => {
           console.log('downloaded');
+          return parse(data);
+        })
+        .then((feed) => {
+          console.log('parsed');
+          state.feeds.push({
+            id: state.feeds.length,
+            url,
+            ...feed,
+          });
+          state.form.processState = 'downloaded';
         })
         .catch((error) => {
+          state.form.processState = 'failed';
           state.form.errors.push(error.message);
         });
     });
-  const removeChilds = (element) => {
-    while (element.firstChild && element.removeChild(element.firstChild));
-  };
-
-  watch(state.form, 'validationState', () => {
-    const { validationState } = state.form;
-    switch (validationState) {
-      case 'valid':
-        if (addButton.disable) {
-          addButton.disable = false;
-        }
-        break;
-      default:
-        if (!addButton.disable) {
-          addButton.disable = true;
-        }
-    }
-  });
-
-  watch(state.form, 'processState', () => {
-    const { processState } = state.form;
-    /*
-    if (processState === 'filling') {
-      addButton.disabled = isInvalid();
-    }
-*/
-    if (processState === 'sending') {
-      addButton.disabled = true;
-      setTimeout(() => {
-        state.form.processState = 'downloaded';
-        state.form.errors = [];
-      },
-      3000);
-    }
-    if (processState === 'downloaded') {
-      state.feeds.push({ id: state.feeds.length, url: state.form.inputUrl });
-      state.form.processState = 'filling';
-    }
-  });
-
-  watch(state, 'feeds', () => {
-    console.log(state.feeds.map(JSON.stringify).join('\n'));
-  });
-
-  watch(state.form, 'errors', () => {
-    const feedback = document.querySelector(feedbackSelector);
-    removeChilds(feedback);
-    if (state.form.errors.length > 0) {
-      state.form.errors.forEach((error) => {
-        const div = document.createElement('div');
-        div.classList.add('alert', 'alert-danger');
-        div.textContent = error;
-        feedback.appendChild(div);
-      });
-    }
-  });
+  render(state);
+  watch(state);
 };
