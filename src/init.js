@@ -8,13 +8,12 @@ const inputSelector = 'input';
 
 const parse = (str) => {
   const parser = new DOMParser();
-  return parser.parseFromString(str, 'text/xml')
-    .then((data) => {
-      const title = data.querySelector('title').textContent;
-      const articles = [];
-      data.querySelectorAll('item').forEach((element) => {
-        articles.push(
-          `<article>
+  const data = parser.parseFromString(str, 'text/xml');
+  const title = data.querySelector('title').textContent;
+  const articles = [];
+  data.querySelectorAll('item').forEach((element) => {
+    articles.push(
+      `<article>
           <img src="${element.querySelector('link').innerHTML}/image/large.png" alt="">
           <h2>
             <a href="${element.querySelector('link').innerHTML}" target="_blank" rel="noopener">
@@ -23,10 +22,9 @@ const parse = (str) => {
           </h2>
         </article>
       `,
-        );
-      });
-      return { title, articles };
-    });
+    );
+  });
+  return { title, articles };
 };
 
 export default () => {

@@ -10,7 +10,7 @@ const removeChilds = (element) => {
 const addButton = document.querySelector(addButtonSelector);
 
 export const render = ({ form: { validationState } }) => {
-  addButton.disable = validationState !== 'valid';
+  addButton.disabled = validationState !== 'valid';
 };
 
 const feedback = document.querySelector(feedbackSelector);
@@ -35,9 +35,21 @@ const renderFeeds = (state) => {
 
 export default (state) => {
   watch(state.form, 'validationState', () => {
-    render(state);
-  });
+    // render(state);
 
+    const { validationState } = state.form;
+    switch (validationState) {
+      case 'valid':
+        if (addButton.disable) {
+          addButton.disable = false;
+        }
+        break;
+      default:
+        if (!addButton.disable) {
+          addButton.disable = true;
+        }
+    }
+  });
   watch(state.form, 'processState', () => {
     const { processState } = state.form;
     switch (processState) {
