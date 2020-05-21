@@ -2,6 +2,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: process.env.NODE_ENV || 'development',
+  devtool: 'inline-source-map',
+  devServer: {
+    contentBase: './dist',
+  },
   module: {
     rules: [
       {

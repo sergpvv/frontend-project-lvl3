@@ -12,61 +12,101 @@ export default () => {
   const state = {
     form: {
       processState: 'filling',
-      input: '',
+      inputUrl: '',
       validationState: 'invalid',
       errors: [],
     },
     feeds: [],
   };
   const schema = yup.object().shape({
-    input: yup.string().url(),
+    inputUrl: yup.string().url().required(),
   });
+  const addButton = document.querySelector(addButtonSelector);
+  addButton.disabled = true;
+  const isValid = (value) => value === 'valid';
   document.querySelector(inputSelector)
     .addEventListener('input', ({ target }) => {
       state.form.processState = 'filling';
-      state.form.input = target.value;
+      state.form.inputUrl = target.value;
       schema
-        .validate({ input: state.form.input }, { strict: true, abortEarly: false })
-        .then(({ input }) => {
-          state.form.validatonState = 'valid';
-          state.errors = [`is correct:${input}`];
+        .isValid(state.form, { strict: true, abortEarly: false })
+        .then((valid) => {
+          if (valid) {
+            state.form.validatonState = state.feeds.some(({ url }) => url === state.form.inputUrl)
+              ? 'already added'
+              : 'valid';
+          } else {
+            state.form.validatonState = 'invalid';
+          }
+          console.log(state.form.validatonState);
+          if (isValid(state.form.validatonState)) {
+            // state.form.errors.push(`rss feed url ${state.form.validatonState}`);
+            addButton.disabled = false;
+            state.form.errors = [];
+          }
+          return schema.validate(state.form, { strict: true, abortEarly: false });
         })
         .catch(({ errors }) => {
-          state.form.errors = [...errors];
+          if (errors.length > 0) {
+            state.form.errors = [...errors];
+          }
         });
     });
   document.querySelector(formSelector)
     .addEventListener('submit', (e) => {
       e.preventDefault();
       state.form.processState = 'sending';
-      axios.get([corsProxy, state.form.input].join(''))
+      axios.get([corsProxy, state.form.inputUrl].join(''))
         .then(() => {
           // const feed = parse(response);
-          setTimeout(() => {
-            state.form.processState = 'filling';
-            state.form.errors = [];
-          },
-          3000);
+          console.log('downloaded');
         })
         .catch((error) => {
           state.form.errors.push(error.message);
         });
     });
-  const isInvalid = () => state.form.validationState === 'invalid';
   const removeChilds = (element) => {
     while (element.firstChild && element.removeChild(element.firstChild));
   };
-  const addButton = document.querySelector(addButtonSelector);
-  addButton.disabled = isInvalid();
 
-  watch(state.form, 'processState', () => {
-    if (state.form.processState === 'sending') {
-      addButton.disabled = true;
+  watch(state.form, 'validationState', () => {
+    const { validationState } = state.form;
+    switch (validationState) {
+      case 'valid':
+        if (addButton.disable) {
+          addButton.disable = false;
+        }
+        break;
+      default:
+        if (!addButton.disable) {
+          addButton.disable = true;
+        }
     }
   });
 
-  watch(state.form, 'validationState', () => {
-    addButton.disabled = isInvalid();
+  watch(state.form, 'processState', () => {
+    const { processState } = state.form;
+    /*
+    if (processState === 'filling') {
+      addButton.disabled = isInvalid();
+    }
+*/
+    if (processState === 'sending') {
+      addButton.disabled = true;
+      setTimeout(() => {
+        state.form.processState = 'downloaded';
+        state.form.errors = [];
+      },
+      3000);
+    }
+    if (processState === 'downloaded') {
+      state.feeds.push({ id: state.feeds.length, url: state.form.inputUrl });
+      state.form.processState = 'filling';
+    }
+  });
+
+  watch(state, 'feeds', () => {
+    console.log(state.feeds.map(JSON.stringify).join('\n'));
   });
 
   watch(state.form, 'errors', () => {
@@ -75,7 +115,7 @@ export default () => {
     if (state.form.errors.length > 0) {
       state.form.errors.forEach((error) => {
         const div = document.createElement('div');
-        div.classList.add('alert', 'alert-danger', 'pb-0', 'pt-0', 'mb-1');
+        div.classList.add('alert', 'alert-danger');
         div.textContent = error;
         feedback.appendChild(div);
       });
