@@ -1,30 +1,20 @@
 import * as yup from 'yup';
 import axios from 'axios';
-import watch, { render } from './view';
+import watch from './view';
 
 const corsProxy = 'https://cors-anywhere.herokuapp.com/';
-const formSelector = 'form';
-const inputSelector = 'input';
 
 const parse = (str) => {
   const parser = new DOMParser();
-  const data = parser.parseFromString(str, 'text/xml');
-  const title = data.querySelector('title').textContent;
-  const articles = [];
-  data.querySelectorAll('item').forEach((element) => {
-    articles.push(
-      `<article>
-          <img src="${element.querySelector('link').innerHTML}/image/large.png" alt="">
-          <h2>
-            <a href="${element.querySelector('link').innerHTML}" target="_blank" rel="noopener">
-              ${element.querySelector('title').innerHTML}
-            </a>
-          </h2>
-        </article>
-      `,
-    );
-  });
-  return { title, articles };
+  const dom = parser.parseFromString(str, 'text/xml');
+  const title = dom.querySelector('title').textContent;
+  const description = dom.querySelector('description').textContent;
+  const articles = [...dom.querySelectorAll('item')]
+    .map((element) => ({
+      title: element.querySelector('title').textContent,
+      link: element.querySelector('link').textContent,
+    }));
+  return { title, description, articles };
 };
 
 export default () => {
@@ -41,7 +31,7 @@ export default () => {
     inputUrl: yup.string().url().required(),
   });
   const isValid = (value) => value === 'valid';
-  document.querySelector(inputSelector)
+  document.querySelector('input')
     .addEventListener('input', ({ target }) => {
       state.form.processState = 'filling';
       state.form.inputUrl = target.value;
@@ -49,14 +39,14 @@ export default () => {
         .isValid(state.form, { strict: true, abortEarly: false })
         .then((valid) => {
           if (valid) {
-            state.form.validatonState = state.feeds.some(({ url }) => url === state.form.inputUrl)
+            state.form.validationState = state.feeds.some(({ url }) => url === state.form.inputUrl)
               ? 'already added'
               : 'valid';
           } else {
-            state.form.validatonState = 'invalid';
+            state.form.validationState = 'invalid';
           }
-          console.log(state.form.validatonState);
-          if (isValid(state.form.validatonState)) {
+          console.log(state.form.validationState);
+          if (isValid(state.form.validationState)) {
             state.form.errors = [];
           }
           return schema.validate(state.form, { strict: true, abortEarly: false });
@@ -67,30 +57,32 @@ export default () => {
           }
         });
     });
-  document.querySelector(formSelector)
+  document.querySelector('form')
     .addEventListener('submit', (e) => {
       e.preventDefault();
       state.form.processState = 'sending';
+      state.form.errors = ['Sending request'];
       const url = state.form.inputUrl;
       axios.get([corsProxy, url].join(''))
         .then(({ data }) => {
           console.log('downloaded');
+          state.form.inputUrl = '';
           return parse(data);
         })
-        .then((feed) => {
+        .then((rssFeed) => {
           console.log('parsed');
           state.feeds.push({
             id: state.feeds.length,
             url,
-            ...feed,
+            ...rssFeed,
           });
           state.form.processState = 'downloaded';
         })
         .catch((error) => {
+          const { message } = error;
           state.form.processState = 'failed';
-          state.form.errors.push(error.message);
+          state.form.errors.push(message || error);
         });
     });
-  render(state);
   watch(state);
 };

@@ -1,19 +1,14 @@
 import { watch } from 'melanke-watchjs';
 
-const addButtonSelector = '.btn';
-const feedbackSelector = '.feedback';
+const input = document.querySelector('input');
+const addButton = document.querySelector('button');
+const feedback = document.querySelector('.feedback');
+const rssItems = document.querySelector('.rss-items');
+const rssLinks = document.querySelector('.rss-links');
 
 const removeChilds = (element) => {
   while (element.firstChild && element.removeChild(element.firstChild));
 };
-
-const addButton = document.querySelector(addButtonSelector);
-
-export const render = ({ form: { validationState } }) => {
-  addButton.disabled = validationState !== 'valid';
-};
-
-const feedback = document.querySelector(feedbackSelector);
 
 const renderFeedback = (state) => {
   removeChilds(feedback);
@@ -27,31 +22,46 @@ const renderFeedback = (state) => {
   }
 };
 
-const stringify = (obj) => JSON.stringify(obj, null, '  ');
-
-const renderFeeds = (state) => {
-  state.feeds.map(stringify).forEach(console.log);
+const renderRssItems = (state) => {
+  removeChilds(rssItems);
+  removeChilds(rssLinks);
+  state.feeds.forEach(({ title, description, articles }) => {
+    const divItem = document.createElement('div');
+    divItem.textContent = [title, description].join(': ');
+    rssItems.append(divItem);
+    articles.forEach(({ title: article, link }) => {
+      const divLink = document.createElement('div');
+      const a = document.createElement('a');
+      a.setAttribute('href', link);
+      a.textContent = article;
+      divLink.append(a);
+      rssLinks.append(divLink);
+    });
+  });
 };
 
 export default (state) => {
-  watch(state.form, 'validationState', () => {
-    // render(state);
-
-    const { validationState } = state.form;
+  watch(state.form, ['validationState', 'inputUrl', 'processState'], () => {
+    const { validationState, inputUrl, processState } = state.form;
     switch (validationState) {
       case 'valid':
-        if (addButton.disable) {
-          addButton.disable = false;
-        }
+        addButton.disabled = false;
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
         break;
       default:
-        if (!addButton.disable) {
-          addButton.disable = true;
-        }
+        addButton.disabled = true;
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+        break;
     }
-  });
-  watch(state.form, 'processState', () => {
-    const { processState } = state.form;
+    switch (inputUrl) {
+      case '':
+        input.classList.remove('is-valid');
+        input.classList.remove('is-invalid');
+        break;
+      default:
+    }
     switch (processState) {
       case 'filling':
         renderFeedback(state);
@@ -60,11 +70,10 @@ export default (state) => {
         addButton.disabled = true;
         break;
       case 'failed':
-        render(state);
         renderFeedback(state);
         break;
       case 'downloaded':
-        renderFeeds(state);
+        renderRssItems(state);
         break;
       default:
         throw new Error(`processState: ${processState}`);
