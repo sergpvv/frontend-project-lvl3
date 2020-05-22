@@ -19,13 +19,12 @@ const parse = (str) => {
 
 export default () => {
   const state = {
-    form: {
-      processState: 'filling',
-      inputUrl: '',
-      validationState: 'invalid',
-      errors: [],
-    },
-    feeds: [],
+    processState: 'filling',
+    inputUrl: '',
+    alidationState: 'invalid',
+    errors: [],
+    rssItems: [],
+    displayedRssItem: -1,
   };
   const schema = yup.object().shape({
     inputUrl: yup.string().url().required(),
@@ -33,55 +32,64 @@ export default () => {
   const isValid = (value) => value === 'valid';
   document.querySelector('input')
     .addEventListener('input', ({ target }) => {
-      state.form.processState = 'filling';
-      state.form.inputUrl = target.value;
+      state.processState = 'filling';
+      state.inputUrl = target.value;
       schema
-        .isValid(state.form, { strict: true, abortEarly: false })
+        .isValid(state, { strict: true, abortEarly: false })
         .then((valid) => {
           if (valid) {
-            state.form.validationState = state.feeds.some(({ url }) => url === state.form.inputUrl)
-              ? 'already added'
+            state.validationState = state.rssItems.some(({ url }) => url === state.inputUrl)
+              ? 'exists'
               : 'valid';
           } else {
             state.form.validationState = 'invalid';
           }
-          console.log(state.form.validationState);
-          if (isValid(state.form.validationState)) {
-            state.form.errors = [];
+          console.log(state.validationState);
+          if (isValid(state.validationState)) {
+            state.errors = [];
+            return { errors: [] };
           }
-          return schema.validate(state.form, { strict: true, abortEarly: false });
+          return schema.validate(state, { strict: true, abortEarly: false });
+        })
+        .then((valid) => {
+          console.log(JSON.stringify(valid, null, '  '));
         })
         .catch(({ errors }) => {
-          if (errors.length > 0) {
-            state.form.errors = [...errors];
+          if (errors && errors.length > 0) {
+            state.errors = [...errors];
+            state.validationState = 'invalid';
           }
         });
     });
   document.querySelector('form')
     .addEventListener('submit', (e) => {
       e.preventDefault();
-      state.form.processState = 'sending';
-      state.form.errors = ['Sending request'];
-      const url = state.form.inputUrl;
+      if (!isValid(state.validationState)) {
+        state.errors.push('Please, input correct url!');
+        state.inputUrl = '';
+        return;
+      }
+      state.processState = 'sending';
+      state.errors.push('Sending request');
+      const url = state.inputUrl;
       axios.get([corsProxy, url].join(''))
         .then(({ data }) => {
           console.log('downloaded');
-          state.form.inputUrl = '';
           return parse(data);
         })
-        .then((rssFeed) => {
+        .then((parsedRssFeed) => {
           console.log('parsed');
-          state.feeds.push({
-            id: state.feeds.length,
-            url,
-            ...rssFeed,
-          });
-          state.form.processState = 'downloaded';
+          const id = state.rssItems.length;
+          state.rssItems.push({ id, url, ...parsedRssFeed });
+          state.inputUrl = '';
+          state.processState = 'downloaded';
+          state.validationState = 'invalid';
+          state.displayedRssItem = id;
         })
         .catch((error) => {
           const { message } = error;
-          state.form.processState = 'failed';
-          state.form.errors.push(message || error);
+          state.processState = 'failed';
+          state.errors.push(message || error);
         });
     });
   watch(state);
