@@ -2,6 +2,7 @@ import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
 import watch from './view';
+import en from './locales/en';
 
 const corsProxy = 'https://cors-anywhere.herokuapp.com/';
 
