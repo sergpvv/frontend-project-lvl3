@@ -1,5 +1,6 @@
 import * as yup from 'yup';
 import axios from 'axios';
+import i18next from 'i18next';
 import watch from './view';
 
 const corsProxy = 'https://cors-anywhere.herokuapp.com/';
@@ -18,6 +19,13 @@ const parse = (str) => {
 };
 
 export default () => {
+  i18next.init({
+    lng: 'en',
+    debug: true,
+    resources: {
+      en,
+    },
+  });
   const state = {
     processState: 'filling',
     inputUrl: '',
