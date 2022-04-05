@@ -36,7 +36,7 @@
     "testURL": "http://localhost/"
   },
   "dependencies": {
-    "axios": "^0.20.0",
+    "axios": "^0.21.2",
     "bootstrap": "^4.5.2",
     "i18next": "^19.7.0",
     "jquery": "^3.5.1",
