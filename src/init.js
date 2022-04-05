@@ -30,7 +30,7 @@ export default () => {
   const state = {
     processState: 'filling',
     inputUrl: '',
-    alidationState: 'invalid',
+    validationState: 'invalid',
     errors: [],
     rssItems: [],
     displayedRssItem: -1,
