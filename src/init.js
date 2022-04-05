@@ -18,6 +18,12 @@ const parse = (str) => {
   return { title, description, articles };
 };
 
+const getInputUrl = (form) => {
+  const input = form.querySelector('input');
+  // console.log('input.value: ', input.value);
+  return input.value;
+};
+
 export default () => {
   i18next.init({
     lng: 'en',
@@ -34,25 +40,38 @@ export default () => {
     rssItems: [],
     displayedRssItem: -1,
   };
+  watch(state);
   const schema = yup.object().shape({
     inputUrl: yup.string().url().required(),
   });
-  const isValid = (value) => value === 'valid';
-  document.querySelector('input')
+  const isInvalid = (value) => value === 'invalid';
+  /*  document.querySelector('input')
     .addEventListener('input', ({ target }) => {
-      state.processState = 'filling';
+      // state.processState = 'filling';
       state.inputUrl = target.value;
+    }); */
+  document.querySelector('form')
+    .addEventListener('submit', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      state.inputUrl = getInputUrl(e.target);
+      state.processState = 'validating';
+      // validate input url
       schema
         .isValid(state, { strict: true, abortEarly: false })
         .then((valid) => {
           if (valid) {
-            state.validationState = state.rssItems.some(({ url }) => url === state.inputUrl)
-              ? 'exists'
-              : 'valid';
+            if (state.rssItems.some(({ url }) => url === state.inputUrl)) {
+              state.ValidationState = 'exists';
+              throw Error('Already exists');
+            } else {
+              state.ValidationState = 'valid';
+            }
           } else {
-            state.form.validationState = 'invalid';
+            state.validationState = 'invalid';
           }
-          console.log(state.validationState);
+        })
+      /* console.log(state.validationState);
           if (isValid(state.validationState)) {
             state.errors = [];
             return { errors: [] };
@@ -60,45 +79,42 @@ export default () => {
           return schema.validate(state, { strict: true, abortEarly: false });
         })
         .then((valid) => {
-          console.log(JSON.stringify(valid, null, '  '));
-        })
+          // console.log(JSON.stringify(valid, null, '  '));
+          console.log('valid: ', valid);
+        }) */
         .catch(({ errors }) => {
           if (errors && errors.length > 0) {
             state.errors = [...errors];
             state.validationState = 'invalid';
+            state.processState = 'filling';
           }
         });
-    });
-  document.querySelector('form')
-    .addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (!isValid(state.validationState)) {
+      if (isInvalid(state.validationState)) {
         state.errors.push('Please, input correct url!');
-        state.inputUrl = '';
+        state.processState = 'filling';
+        //        state.inputUrl = '';
         return;
       }
       state.processState = 'sending';
-      state.errors.push('Sending request');
       const url = state.inputUrl;
       axios.get(wrapUrl(url))
         .then(({ data }) => {
-          console.log('downloaded');
+          console.log('downloaded, parse data..');
           return parse(data);
         })
         .then((parsedRssFeed) => {
-          console.log('parsed');
+          console.log('..parsing complete; parsedRssFed: ', parsedRssFeed);
           const id = state.rssItems.length;
           state.rssItems.push({ id, url, ...parsedRssFeed });
-          state.inputUrl = '';
-          state.processState = 'downloaded';
-          state.validationState = 'invalid';
           state.displayedRssItem = id;
+          state.processState = 'downloaded';
+          state.inputUrl = '';
+          state.validationState = 'invalid';
         })
         .catch((error) => {
           const { message } = error;
-          state.processState = 'failed';
           state.errors.push(message || error);
+          state.processState = 'filling';
         });
     });
-  watch(state);
 };

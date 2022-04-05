@@ -1,5 +1,8 @@
+/* eslint no-param-reassign: ["error", { "props": false }] */
+
 import onChange from 'on-change';
 
+// const form = document.querySelector('form');
 const input = document.querySelector('input');
 const addButton = document.querySelector('button');
 const feedback = document.querySelector('.feedback');
@@ -88,15 +91,17 @@ export default (state) => {
           case 'filling':
             renderFeedback(state);
             break;
-          case 'sending':
+          case 'validating':
             addButton.disabled = true;
             break;
-          case 'failed':
-            renderFeedback(state);
+          case 'sending':
+            addButton.disabled = true;
             break;
           case 'downloaded':
             renderRssItems(state);
             renderRssLinks(state);
+            addButton.disabled = false;
+            state.processState = 'filling';
             break;
           default:
             throw new Error(`processState: ${value}`);
@@ -108,49 +113,5 @@ export default (state) => {
       default:
     }
   });
-  return watchedObject;
-  /*
-  watch(state, ['validationState', 'inputUrl', 'processState'], () => {
-    const { validationState, inputUrl, processState } = state;
-    switch (validationState) {
-      case 'valid':
-        addButton.disabled = false;
-        input.classList.remove('is-invalid');
-        input.classList.add('is-valid');
-        break;
-      default:
-        addButton.disabled = true;
-        input.classList.remove('is-valid');
-        input.classList.add('is-invalid');
-        break;
-    }
-    switch (inputUrl) {
-      case '':
-        input.classList.remove('is-valid');
-        input.classList.remove('is-invalid');
-        break;
-      default:
-    }
-    switch (processState) {
-      case 'filling':
-        renderFeedback(state);
-        break;
-      case 'sending':
-        addButton.disabled = true;
-        break;
-      case 'failed':
-        renderFeedback(state);
-        break;
-      case 'downloaded':
-        renderRssItems(state);
-        // renderRssLinks(state);
-        break;
-      default:
-        throw new Error(`processState: ${processState}`);
-    }
-  });
-  watch(state.displayedRssItem, () => {
-    renderRssLinks(state);
-  });
-  */
+  console.log(watchedObject);
 };
