@@ -64,6 +64,7 @@ const renderRssItems = (state) => {
 
 export default (state) => {
   const watchedObject = onChange(state, (path, value) => {
+    console.log(`path: ${path}; value: ${value}`);
     switch (path) {
       case 'validationState':
         if (value === 'valid') {
