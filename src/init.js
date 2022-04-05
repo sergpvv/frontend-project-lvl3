@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import watch from './view';
 import en from './locales/en';
 
-const corsProxy = 'https://cors-anywhere.herokuapp.com/';
+const corsProxy = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
 
 const parse = (str) => {
   const parser = new DOMParser();

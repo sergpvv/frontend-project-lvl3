@@ -1,4 +1,4 @@
-import { watch } from 'melanke-watchjs';
+import onChange from 'on-change';
 
 const input = document.querySelector('input');
 const addButton = document.querySelector('button');
@@ -63,6 +63,52 @@ const renderRssItems = (state) => {
 };
 
 export default (state) => {
+  const watchedObject = onChange(state, (path, value) => {
+    switch (path) {
+      case 'validationState':
+        if (value === 'valid') {
+          addButton.disabled = false;
+          input.classList.remove('is-invalid');
+          input.classList.add('is-valid');
+        } else {
+          addButton.disabled = true;
+          input.classList.remove('is-valid');
+          input.classList.add('is-invalid');
+        }
+        break;
+      case 'inputUrl':
+        if (value === '') {
+          input.classList.remove('is-valid');
+          input.classList.remove('is-invalid');
+        }
+        break;
+      case 'processState':
+        switch (value) {
+          case 'filling':
+            renderFeedback(state);
+            break;
+          case 'sending':
+            addButton.disabled = true;
+            break;
+          case 'failed':
+            renderFeedback(state);
+            break;
+          case 'downloaded':
+            renderRssItems(state);
+            renderRssLinks(state);
+            break;
+          default:
+            throw new Error(`processState: ${value}`);
+        }
+        break;
+      case 'displayedRssItem':
+        renderRssLinks(state);
+        break;
+      default:
+    }
+  });
+  return watchedObject;
+  /*
   watch(state, ['validationState', 'inputUrl', 'processState'], () => {
     const { validationState, inputUrl, processState } = state;
     switch (validationState) {
@@ -105,4 +151,5 @@ export default (state) => {
   watch(state.displayedRssItem, () => {
     renderRssLinks(state);
   });
+  */
 };
