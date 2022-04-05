@@ -3,8 +3,7 @@ import axios from 'axios';
 import i18next from 'i18next';
 import watch from './view';
 import en from './locales/en';
-
-const corsProxy = 'https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=';
+import wrapUrl from './utils/wrapper'; // CORS proxy url wrapper
 
 const parse = (str) => {
   const parser = new DOMParser();
@@ -81,7 +80,7 @@ export default () => {
       state.processState = 'sending';
       state.errors.push('Sending request');
       const url = state.inputUrl;
-      axios.get([corsProxy, url].join(''))
+      axios.get(wrapUrl(url))
         .then(({ data }) => {
           console.log('downloaded');
           return parse(data);

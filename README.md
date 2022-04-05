@@ -4,4 +4,4 @@
 [![CI](https://github.com/sergpvv/frontend-project-lvl3/workflows/CI/badge.svg)](https://github.com/sergpvv/frontend-project-lvl3/actions)
 
 
-## [Demo](https://rss-feed-aggregator.now.sh)
+## [working demo](https://rss-feed-aggregator.vercel.app)
