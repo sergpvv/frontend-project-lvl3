@@ -93,6 +93,10 @@ export default (state) => onChange(
         break;
       case 'processState':
         switch (value) {
+          case 'filling':
+            addButton.disabled = false;
+            renderFeedback(state);
+            break;
           case 'validating':
             addButton.disabled = true;
             break;
