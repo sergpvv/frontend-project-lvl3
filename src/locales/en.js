@@ -1,8 +1,8 @@
 export default {
   translation: {
-    invalidUrl: 'invalid url',
-    feedAlreadyAdded: 'feed already added',
-    feedSuccessfullyAdded: 'feed successfully added',
-    networkFailures: 'feed was not added due to network failures',
+    invalid: 'Please, input correct URL!',
+    exists: 'Feed with same URL already added.',
+    success: 'Feed processed successfully.',
+    netError: 'Feed was not added due to network failures.',
   },
 };

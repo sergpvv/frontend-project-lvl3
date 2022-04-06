@@ -20,7 +20,7 @@ const parse = (str) => {
 
 const getInputUrl = (form) => {
   const { value } = form.querySelector('input');
-  console.log('form.input.value: ', value);
+  // console.log('form.input.value: ', value);
   return value;
 };
 
@@ -58,19 +58,18 @@ export default () => {
     lng: 'en',
     debug: true,
     resources: {
-      en,
+      en, // { invalid, exists, success, netError }
     },
   });
-  const stateSchema = {
+  const state = watch({
     processState: 'filling', // validating, sending, downloaded, processed
     inputUrl: '',
     validationState: 'none', // invalid, valid
     errors: [],
     rssItems: [],
     displayedRssItem: -1,
-  };
-  const state = watch(stateSchema);
-  console.log(`watched state: ${JSON.stringify(state, null, '  ')}`);
+  });
+  // console.log(`watched state: ${JSON.stringify(state, null, '  ')}`);
   document.querySelector('form')
     .addEventListener('submit', (e) => {
       e.preventDefault();
@@ -79,10 +78,10 @@ export default () => {
       state.processState = 'validating';
       const schema = yup.object().shape({
         inputUrl: yup.string()
-          .url('invalid url')
+          .url(i18next.t('invalid'))
           .test(
             'isNewUrl',
-            'feed already exists',
+            i18next.t('exists'),
             (testUrl, { parent }) => {
               const { rssItems } = parent;
               return !rssItems.some(({ url }) => url === testUrl);
@@ -113,8 +112,10 @@ export default () => {
             })
             .catch((error) => {
               const { message } = error;
-              state.errors.push(message || error);
+              // state.errors.push(message || error);
+              state.errors.push(i18next.t('netError'));
               state.processState = 'filling';
+              console.log(`axios.get, cath, error message: ${message}; state.errors: ${state.errors}`);
             });
         })
         .catch((errorMessage) => {
