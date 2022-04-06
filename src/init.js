@@ -19,12 +19,41 @@ const parse = (str) => {
 };
 
 const getInputUrl = (form) => {
-  const input = form.querySelector('input');
-  console.log('input.value: ', input.value);
-  return input.value;
+  const { value } = form.querySelector('input');
+  console.log('form.input.value: ', value);
+  return value;
 };
 
 export default () => {
+/*
+  const testSchema = yup.object().shape({
+    url: yup.string().url('incorrect')
+      .test(
+        'isNew',
+        'url already exists',
+        (testUrl, context) => {
+          // const stringifyContext = JSON.stringify(context, null, '  ');
+          // console.log(`testUrl: ${testUrl}; context: ${stringifyContext}`);
+          const { items } = context.parent;
+          console.log(`testUrl: ${testUrl}; items: ${items}`);
+          return !items.includes(testUrl);
+        },
+      ),
+  });
+  const testState = {
+    foo: 'bar',
+    url: 'http://foo.bar/baz',
+    items: ['lorem', 'http://foo.bar/baz'],
+  };
+  testSchema
+    .validate(testState, { strict: true, abortEarly: false })
+    .then((value) => {
+      console.log('testShema.validate.then, value:', value);
+    })
+    .catch((value) => {
+      console.log('testSchema.validate.cath, value: ', value);
+    });
+*/
   i18next.init({
     lng: 'en',
     debug: true,
@@ -32,79 +61,67 @@ export default () => {
       en,
     },
   });
-  const state = {
-    processState: 'filling',
+  const stateSchema = {
+    processState: 'filling', // validating, sending, downloaded, processed
     inputUrl: '',
-    validationState: 'none',
+    validationState: 'none', // invalid, valid
     errors: [],
     rssItems: [],
     displayedRssItem: -1,
   };
-  watch(state);
-  const schema = yup.object().shape({
-    inputUrl: yup.string().url().required(),
-  });
-  /* const isInvalid = (value) => value === 'invalid';
-    document.querySelector('input')
-    .addEventListener('input', ({ target }) => {
-      // state.processState = 'filling';
-      state.inputUrl = target.value;
-    }); */
+  const state = watch(stateSchema);
+  console.log(`watched state: ${JSON.stringify(state, null, '  ')}`);
   document.querySelector('form')
     .addEventListener('submit', (e) => {
       e.preventDefault();
       // e.stopPropagation();
       state.inputUrl = getInputUrl(e.target);
       state.processState = 'validating';
+      const schema = yup.object().shape({
+        inputUrl: yup.string()
+          .url('invalid url')
+          .test(
+            'isNewUrl',
+            'feed already exists',
+            (testUrl, { parent }) => {
+              const { rssItems } = parent;
+              return !rssItems.some(({ url }) => url === testUrl);
+            },
+          ),
+      });
       schema
-        .isValid(state, { strict: true, abortEarly: false })
-        .then(() => {
-          if (state.rssItems.some(({ url }) => url === state.inputUrl)) {
-            state.ValidationState = 'exists';
-            throw new Error('Already exists');
-          } else {
-            state.validationState = 'valid';
-            state.processState = 'sending';
-            const url = state.inputUrl;
-            axios.get(wrapUrl(url))
-              .then(({ data }) => {
-                console.log('downloaded, parse data..');
-                return parse(data);
-              })
-              .then((parsedRssFeed) => {
-                console.log('..parsing complete; parsedRssFed: ', parsedRssFeed);
-                const id = state.rssItems.length;
-                state.rssItems.push({ id, url, ...parsedRssFeed });
-                state.displayedRssItem = id;
-                state.processState = 'downloaded';
-                state.inputUrl = '';
-                state.validationState = 'none';
-              })
-              .catch((error) => {
-                const { message } = error;
-                state.errors.push(message || error);
-                state.processState = 'filling';
-              });
-          }
+        .validate(state, { strict: true, abortEarly: false })
+        .then((stateObject) => {
+          console.log('validate then, stateObject: ', stateObject);
+          state.validationState = 'valid';
+          state.processState = 'sending';
+          const url = state.inputUrl;
+          axios.get(wrapUrl(url))
+            .then(({ data }) => {
+              console.log('downloaded, parse data..');
+              state.processState = 'downloaded';
+              return parse(data);
+            })
+            .then((parsedRssFeed) => {
+              console.log('..parsing complete; parsedRssFed: ', parsedRssFeed);
+              const id = state.rssItems.length;
+              state.rssItems.push({ id, url, ...parsedRssFeed });
+              state.displayedRssItem = id;
+              state.processState = 'processed';
+              state.inputUrl = '';
+              state.validationState = 'none';
+            })
+            .catch((error) => {
+              const { message } = error;
+              state.errors.push(message || error);
+              state.processState = 'filling';
+            });
         })
-      /* console.log(state.validationState);
-          if (isValid(state.validationState)) {
-            state.errors = [];
-            return { errors: [] };
-          }
-          return schema.validate(state, { strict: true, abortEarly: false });
-        })
-        .then((valid) => {
-          // console.log(JSON.stringify(valid, null, '  '));
-          console.log('valid: ', valid);
-        }) */
-        .catch(({ errors }) => {
-          console.log('errors: ', errors);
+        .catch((errorMessage) => {
+          console.log('errorMessage: ', errorMessage);
+          state.errors.push(errorMessage);
           state.validationState = 'invalid';
           state.processState = 'filling';
-          if (errors && errors.length > 0) {
-            state.errors = [...errors];
-          }
         });
     });
 };

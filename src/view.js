@@ -65,61 +65,56 @@ const renderRssItems = (state) => {
   renderRssLinks(state);
 };
 
-export default (state) => {
-  const watchedObject = onChange(state, (path, value) => {
+export default (state) => onChange(
+  state,
+  (path, value) => {
     console.log(`path: ${path}; value: ${value}`);
     switch (path) {
       case 'validationState':
         switch (value) {
           case 'valid':
-            //         addButton.disabled = true;
             input.classList.remove('is-invalid');
             input.classList.add('is-valid');
+            renderFeedback(state);
             break;
           case 'invalid':
             addButton.disabled = false;
             input.classList.remove('is-valid');
             input.classList.add('is-invalid');
+            renderFeedback(state);
             break;
-          case 'exists':
+          case 'none':
             input.classList.remove('is-valid');
-            input.classList.add('is-invalid');
+            input.classList.remove('is-invalid');
             break;
           default:
-        }
-        break;
-      case 'inputUrl':
-        if (value === '') {
-          input.classList.remove('is-valid');
-          input.classList.remove('is-invalid');
+            console.log('validationState switch(value) default: ', value);
         }
         break;
       case 'processState':
         switch (value) {
-          case 'filling':
-            renderFeedback(state);
-            break;
           case 'validating':
             addButton.disabled = true;
             break;
           case 'sending':
             addButton.disabled = true;
             break;
-          case 'downloaded':
+          case 'processed':
             renderRssItems(state);
             renderRssLinks(state);
             addButton.disabled = false;
             state.processState = 'filling';
             break;
           default:
-            throw new Error(`processState: ${value}`);
+            console.log('processState switch(value) default: ', value);
         }
         break;
-      case 'displayedRssItem':
-        renderRssLinks(state);
-        break;
+        /*
+        case 'displayedRssItem':
+          renderRssLinks(state);
+        break; */
       default:
+        console.log('switch(path) default: ', path);
     }
-  });
-  console.log('watchedObject: ', watchedObject);
-};
+  },
+);

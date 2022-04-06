@@ -1,4 +1,7 @@
 develop:
+	npx webpack serve --open --port 8080 --host 10.0.2.15
+
+start:
 	npm start
 
 install:
