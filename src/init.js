@@ -20,7 +20,7 @@ const parse = (str) => {
 
 const getInputUrl = (form) => {
   const input = form.querySelector('input');
-  // console.log('input.value: ', input.value);
+  console.log('input.value: ', input.value);
   return input.value;
 };
 
@@ -35,7 +35,7 @@ export default () => {
   const state = {
     processState: 'filling',
     inputUrl: '',
-    validationState: 'invalid',
+    validationState: 'none',
     errors: [],
     rssItems: [],
     displayedRssItem: -1,
@@ -44,8 +44,8 @@ export default () => {
   const schema = yup.object().shape({
     inputUrl: yup.string().url().required(),
   });
-  const isInvalid = (value) => value === 'invalid';
-  /*  document.querySelector('input')
+  /* const isInvalid = (value) => value === 'invalid';
+    document.querySelector('input')
     .addEventListener('input', ({ target }) => {
       // state.processState = 'filling';
       state.inputUrl = target.value;
@@ -53,22 +53,38 @@ export default () => {
   document.querySelector('form')
     .addEventListener('submit', (e) => {
       e.preventDefault();
-      e.stopPropagation();
+      // e.stopPropagation();
       state.inputUrl = getInputUrl(e.target);
       state.processState = 'validating';
-      // validate input url
       schema
         .isValid(state, { strict: true, abortEarly: false })
-        .then((valid) => {
-          if (valid) {
-            if (state.rssItems.some(({ url }) => url === state.inputUrl)) {
-              state.ValidationState = 'exists';
-              throw Error('Already exists');
-            } else {
-              state.ValidationState = 'valid';
-            }
+        .then(() => {
+          if (state.rssItems.some(({ url }) => url === state.inputUrl)) {
+            state.ValidationState = 'exists';
+            throw new Error('Already exists');
           } else {
-            state.validationState = 'invalid';
+            state.validationState = 'valid';
+            state.processState = 'sending';
+            const url = state.inputUrl;
+            axios.get(wrapUrl(url))
+              .then(({ data }) => {
+                console.log('downloaded, parse data..');
+                return parse(data);
+              })
+              .then((parsedRssFeed) => {
+                console.log('..parsing complete; parsedRssFed: ', parsedRssFeed);
+                const id = state.rssItems.length;
+                state.rssItems.push({ id, url, ...parsedRssFeed });
+                state.displayedRssItem = id;
+                state.processState = 'downloaded';
+                state.inputUrl = '';
+                state.validationState = 'none';
+              })
+              .catch((error) => {
+                const { message } = error;
+                state.errors.push(message || error);
+                state.processState = 'filling';
+              });
           }
         })
       /* console.log(state.validationState);
@@ -83,38 +99,12 @@ export default () => {
           console.log('valid: ', valid);
         }) */
         .catch(({ errors }) => {
+          console.log('errors: ', errors);
+          state.validationState = 'invalid';
+          state.processState = 'filling';
           if (errors && errors.length > 0) {
             state.errors = [...errors];
-            state.validationState = 'invalid';
-            state.processState = 'filling';
           }
-        });
-      if (isInvalid(state.validationState)) {
-        state.errors.push('Please, input correct url!');
-        state.processState = 'filling';
-        //        state.inputUrl = '';
-        return;
-      }
-      state.processState = 'sending';
-      const url = state.inputUrl;
-      axios.get(wrapUrl(url))
-        .then(({ data }) => {
-          console.log('downloaded, parse data..');
-          return parse(data);
-        })
-        .then((parsedRssFeed) => {
-          console.log('..parsing complete; parsedRssFed: ', parsedRssFeed);
-          const id = state.rssItems.length;
-          state.rssItems.push({ id, url, ...parsedRssFeed });
-          state.displayedRssItem = id;
-          state.processState = 'downloaded';
-          state.inputUrl = '';
-          state.validationState = 'invalid';
-        })
-        .catch((error) => {
-          const { message } = error;
-          state.errors.push(message || error);
-          state.processState = 'filling';
         });
     });
 };

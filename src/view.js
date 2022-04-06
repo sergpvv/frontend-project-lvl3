@@ -70,14 +70,22 @@ export default (state) => {
     console.log(`path: ${path}; value: ${value}`);
     switch (path) {
       case 'validationState':
-        if (value === 'valid') {
-          addButton.disabled = false;
-          input.classList.remove('is-invalid');
-          input.classList.add('is-valid');
-        } else {
-          addButton.disabled = true;
-          input.classList.remove('is-valid');
-          input.classList.add('is-invalid');
+        switch (value) {
+          case 'valid':
+            //         addButton.disabled = true;
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            break;
+          case 'invalid':
+            addButton.disabled = false;
+            input.classList.remove('is-valid');
+            input.classList.add('is-invalid');
+            break;
+          case 'exists':
+            input.classList.remove('is-valid');
+            input.classList.add('is-invalid');
+            break;
+          default:
         }
         break;
       case 'inputUrl':
@@ -113,5 +121,5 @@ export default (state) => {
       default:
     }
   });
-  console.log(watchedObject);
+  console.log('watchedObject: ', watchedObject);
 };
