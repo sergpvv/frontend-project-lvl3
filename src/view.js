@@ -15,13 +15,19 @@ const removeChilds = (element) => {
 
 const renderFeedback = (state) => {
   removeChilds(feedback);
-  if (state.errors.length > 0) {
-    state.errors.forEach((error) => {
-      const div = document.createElement('div');
-      div.classList.add('alert', 'alert-danger');
-      div.textContent = error;
-      feedback.appendChild(div);
-    });
+  const { processState, errors } = state;
+  console.log(`renderFeedback processState: ${processState}; errors: ${errors}`);
+  if (errors.length > 0) {
+    const div = document.createElement('div');
+    const alerts = {
+      sending: 'secondary',
+      downloaded: 'info',
+      processed: 'success',
+    };
+    const type = alerts[processState] || 'danger';
+    div.classList.add('alert', `alert-${type}`);
+    div.textContent = errors.pop();
+    feedback.appendChild(div);
   }
 };
 
@@ -75,7 +81,6 @@ export default (state) => onChange(
           case 'valid':
             input.classList.remove('is-invalid');
             input.classList.add('is-valid');
-            renderFeedback(state);
             break;
           case 'invalid':
             addButton.disabled = false;
@@ -92,15 +97,22 @@ export default (state) => onChange(
         }
         break;
       case 'processState':
+        renderFeedback(state);
         switch (value) {
           case 'filling':
             addButton.disabled = false;
-            renderFeedback(state);
+            break;
+          case 'failure':
+            addButton.disabled = false;
+            state.processState = 'filling';
             break;
           case 'validating':
             addButton.disabled = true;
             break;
           case 'sending':
+            addButton.disabled = true;
+            break;
+          case 'downloaded':
             addButton.disabled = true;
             break;
           case 'processed':

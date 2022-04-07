@@ -58,11 +58,11 @@ export default () => {
     lng: 'en',
     debug: true,
     resources: {
-      en, // { invalid, exists, success, netError }
+      en,
     },
   });
   const state = watch({
-    processState: 'filling', // validating, sending, downloaded, processed
+    processState: 'filling', // validating, sending, failure, downloaded, processed
     inputUrl: '',
     validationState: 'none', // invalid, valid
     errors: [],
@@ -93,11 +93,13 @@ export default () => {
         .then((stateObject) => {
           console.log('validate then, stateObject: ', stateObject);
           state.validationState = 'valid';
+          state.errors.push(i18next.t('sending'));
           state.processState = 'sending';
           const url = state.inputUrl;
           axios.get(wrapUrl(url))
             .then(({ data }) => {
               console.log('downloaded, parse data..');
+              state.errors.push(i18next.t('downloaded'));
               state.processState = 'downloaded';
               return parse(data);
             })
@@ -106,6 +108,7 @@ export default () => {
               const id = state.rssItems.length;
               state.rssItems.push({ id, url, ...parsedRssFeed });
               state.displayedRssItem = id;
+              state.errors.push(i18next.t('success'));
               state.processState = 'processed';
               state.inputUrl = '';
               state.validationState = 'none';
@@ -113,8 +116,8 @@ export default () => {
             .catch((error) => {
               const { message } = error;
               // state.errors.push(message || error);
-              state.errors.push(i18next.t('netError'));
-              state.processState = 'filling';
+              state.errors.push(i18next.t('failure'));
+              state.processState = 'failure';
               console.log(`axios.get, cath, error message: ${message}; state.errors: ${state.errors}`);
             });
         })
