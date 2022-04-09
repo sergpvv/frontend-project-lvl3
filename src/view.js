@@ -17,13 +17,14 @@ const renderFeedback = (state) => {
   const { processState } = state;
   console.log(`renderFeedback processState: ${processState}; feedback: ${state.feedback}`);
   if (state.feedback.length > 0) {
-    feedback.classList.remove('text-*');
     const alerts = {
       sending: 'secondary',
       downloaded: 'info',
       processed: 'success',
     };
+    const classes = ['secondary', 'info', 'success', 'danger'];
     const type = alerts[processState] || 'danger';
+    feedback.classList.remove(...classes.map((name) => `text-${name}`));
     feedback.classList.add(`text-${type}`);
     feedback.textContent = state.feedback.pop();
   }
