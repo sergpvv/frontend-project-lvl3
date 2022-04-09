@@ -2,12 +2,11 @@
 
 import onChange from 'on-change';
 
-// const form = document.querySelector('form');
-const input = document.getElementById('url-input');
+const input = document.querySelector('input#url-input');
 const addButton = document.querySelector('button[type=submit]');
 const feedback = document.querySelector('p.feedback');
-const postsDiv = document.querySelector('div.posts');
-const feedsDiv = document.querySelector('div.feeds');
+const postsParent = document.querySelector('div.posts');
+const feedsParent = document.querySelector('div.feeds');
 
 const removeChilds = (element) => {
   while (element.firstChild && element.removeChild(element.firstChild));
@@ -18,6 +17,7 @@ const renderFeedback = (state) => {
   const { processState } = state;
   console.log(`renderFeedback processState: ${processState}; feedback: ${state.feedback}`);
   if (state.feedback.length > 0) {
+    feedback.classList.remove('text-*');
     const alerts = {
       sending: 'secondary',
       downloaded: 'info',
@@ -29,44 +29,52 @@ const renderFeedback = (state) => {
   }
 };
 
-const getArticles = (rssItems, rssItemId) => {
-  const { articles } = rssItems.find(({ id }) => id === rssItemId);
-  return articles || [];
-};
-
-const renderArticles = (articles) => {
-  removeChilds(rssLinksParent);
-  if (articles.length > 0) {
-    articles.forEach(({ title: article, link }) => {
-      const div = document.createElement('div');
-      const a = document.createElement('a');
-      a.setAttribute('href', link);
-      a.textContent = article;
-      div.append(a);
-      rssLinksParent.append(div);
-    });
+const renderFeeds = (feeds) => {
+  let ul = feedsParent.querySelector('ul');
+  if (ul) {
+    removeChilds(ul);
+  } else {
+    ul = document.createElement('ul');
+    ul.classList.add('list-group', 'border-0', 'rounded-0');
   }
-};
-
-const renderRssLinks = ({ rssItems, displayedRssItem }) => {
-  const articles = getArticles(rssItems, displayedRssItem);
-  renderArticles(articles);
-};
-
-const renderRssItems = (state) => {
-  removeChilds(rssItemsParent);
-  state.rssItems.forEach(({
-    id, title, description, articles,
-  }) => {
-    const div = document.createElement('div');
-    div.setAttribute('rss-item-id', id);
-    div.textContent = [title, description].join(': ');
-    div.addEventListener('click', () => {
-      renderArticles(articles);
-    });
-    rssItemsParent.append(div);
+  feeds.forEach(({ title, description }) => {
+    const li = document.createElement('li');
+    li.classList.add('list-group-item', 'border-0', 'border-end-0');
+    const h3 = document.createElement('h3');
+    h3.classList.add('h6', 'm-0');
+    h3.textContent = title;
+    li.append(h3);
+    const p = document.createElement('p');
+    p.classList.add('m-0', 'small', 'text-black-50');
+    p.textContent = description;
+    li.append(p);
+    ul.append(li);
   });
-  renderRssLinks(state);
+  feedsParent.querySelector('div.card').append(ul);
+};
+
+const renderPosts = (posts) => {
+  let ul = postsParent.querySelector('ul');
+  if (ul) {
+    removeChilds(ul);
+  } else {
+    ul = document.createElement('ul');
+    ul.classList.add('list-group', 'border-0', 'rounded-0');
+  }
+  posts.forEach(({ title, link }, index) => {
+    const li = document.createElement('li');
+    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+    const a = document.createElement('a');
+    a.classList.add('fw-bold');
+    a.setAttribute('data-id', index);
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+    a.setAttribute('href', link);
+    a.textContent = title;
+    li.append(a);
+    ul.append(li);
+  });
+  postsParent.querySelector('div.card').append(ul);
 };
 
 export default (state) => onChange(
@@ -84,7 +92,6 @@ export default (state) => onChange(
             addButton.disabled = false;
             input.classList.remove('is-valid');
             input.classList.add('is-invalid');
-            renderFeedback(state);
             break;
           case 'none':
             input.classList.remove('is-valid');
@@ -114,8 +121,6 @@ export default (state) => onChange(
             addButton.disabled = true;
             break;
           case 'processed':
-            renderRssItems(state);
-            renderRssLinks(state);
             addButton.disabled = false;
             state.processState = 'filling';
             break;
@@ -123,10 +128,12 @@ export default (state) => onChange(
             console.log('processState switch(value) default: ', value);
         }
         break;
-        /*
-        case 'displayedRssItem':
-          renderRssLinks(state);
-        break; */
+      case 'posts':
+        renderPosts(state.posts);
+        break;
+      case 'feeds':
+        renderFeeds(state.feeds);
+        break;
       default:
         console.log('switch(path) default: ', path);
     }
