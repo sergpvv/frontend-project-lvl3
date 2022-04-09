@@ -3,31 +3,29 @@
 import onChange from 'on-change';
 
 // const form = document.querySelector('form');
-const input = document.querySelector('input');
-const addButton = document.querySelector('button');
-const feedback = document.querySelector('.feedback');
-const rssItemsParent = document.querySelector('.rss-items');
-const rssLinksParent = document.querySelector('.rss-links');
+const input = document.getElementById('url-input');
+const addButton = document.querySelector('button[type=submit]');
+const feedback = document.querySelector('p.feedback');
+const postsDiv = document.querySelector('div.posts');
+const feedsDiv = document.querySelector('div.feeds');
 
 const removeChilds = (element) => {
   while (element.firstChild && element.removeChild(element.firstChild));
 };
 
 const renderFeedback = (state) => {
-  removeChilds(feedback);
-  const { processState, errors } = state;
-  console.log(`renderFeedback processState: ${processState}; errors: ${errors}`);
-  if (errors.length > 0) {
-    const div = document.createElement('div');
+  feedback.textContent = '';
+  const { processState } = state;
+  console.log(`renderFeedback processState: ${processState}; feedback: ${state.feedback}`);
+  if (state.feedback.length > 0) {
     const alerts = {
       sending: 'secondary',
       downloaded: 'info',
       processed: 'success',
     };
     const type = alerts[processState] || 'danger';
-    div.classList.add('alert', `alert-${type}`);
-    div.textContent = errors.pop();
-    feedback.appendChild(div);
+    feedback.classList.add(`text-${type}`);
+    feedback.textContent = state.feedback.pop();
   }
 };
 

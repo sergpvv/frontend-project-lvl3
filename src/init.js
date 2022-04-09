@@ -3,7 +3,7 @@ import axios from 'axios';
 import i18next from 'i18next';
 import watch from './view';
 import en from './locales/en';
-import wrapUrl from './utils/wrapper'; // CORS proxy url wrapper
+import wrap from './utils/wrapper'; // CORS proxy url wrapper
 
 const parse = (str) => {
   const parser = new DOMParser();
@@ -19,7 +19,7 @@ const parse = (str) => {
 };
 
 const getInputUrl = (form) => {
-  const { value } = form.querySelector('input');
+  const { value } = form.getElementById('url-input');
   // console.log('form.input.value: ', value);
   return value;
 };
@@ -65,7 +65,7 @@ export default () => {
     processState: 'filling', // validating, sending, failure, downloaded, processed
     inputUrl: '',
     validationState: 'none', // invalid, valid
-    errors: [],
+    feedback: [],
     rssItems: [],
     displayedRssItem: -1,
   });
@@ -96,10 +96,10 @@ export default () => {
           state.errors.push(i18next.t('sending'));
           state.processState = 'sending';
           const url = state.inputUrl;
-          axios.get(wrapUrl(url))
+          axios.get(wrap(url))
             .then(({ data }) => {
               console.log('downloaded, parse data..');
-              state.errors.push(i18next.t('downloaded'));
+              state.feedback.push(i18next.t('downloaded'));
               state.processState = 'downloaded';
               return parse(data);
             })
@@ -108,22 +108,21 @@ export default () => {
               const id = state.rssItems.length;
               state.rssItems.push({ id, url, ...parsedRssFeed });
               state.displayedRssItem = id;
-              state.errors.push(i18next.t('success'));
+              state.feedback.push(i18next.t('success'));
               state.processState = 'processed';
               state.inputUrl = '';
               state.validationState = 'none';
             })
             .catch((error) => {
               const { message } = error;
-              // state.errors.push(message || error);
-              state.errors.push(i18next.t('failure'));
+              state.feedback.push(i18next.t('failure'));
               state.processState = 'failure';
-              console.log(`axios.get, cath, error message: ${message}; state.errors: ${state.errors}`);
+              console.log(`axios.get cath, error: ${error}; ${message}`);
             });
         })
         .catch((errorMessage) => {
           console.log('errorMessage: ', errorMessage);
-          state.errors.push(errorMessage);
+          state.feedback.push(errorMessage);
           state.validationState = 'invalid';
           state.processState = 'filling';
         });
