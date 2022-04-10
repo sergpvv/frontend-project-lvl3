@@ -6,6 +6,24 @@ import watch from './view';
 import en from './locales/en';
 import wrap from './utils/wrapper'; // CORS proxy url wrapper
 
+const checkFeedsUpdate = (state) => {
+  state.feeds.forEach(({ url }) => {
+    axios.get(wrap(url))
+      .then(({ data }) => {
+        const { posts } = parse(data);
+        posts.forEach((post) => {
+          if (!state.posts.some(({ title }) => title === post.title)) {
+            state.posts.push(post);
+          }
+        });
+      })
+      .catch((error) => {
+        console.log('checkFeedsUpdate axios.get catch error:', error);
+      });
+  });
+  setTimeout(checkFeedsUpdate, 10000, state);
+};
+
 export default () => {
   i18next.init({
     lng: 'en',
@@ -23,6 +41,7 @@ export default () => {
     posts: [],
     displayedPost: -1,
   });
+
   document.querySelector('form')
     .addEventListener('submit', (e) => {
       e.preventDefault();
@@ -84,4 +103,5 @@ export default () => {
           state.processState = 'filling';
         });
     });
+  setTimeout(checkFeedsUpdate, 5000, state);
 };
