@@ -1,15 +1,53 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
 import onChange from 'on-change';
+// import { Modal } from 'bootstrap';
 
 const input = document.querySelector('input#url-input');
 const addButton = document.querySelector('button[type=submit]');
 const feedback = document.querySelector('p.feedback');
 const postsParent = document.querySelector('div.posts');
 const feedsParent = document.querySelector('div.feeds');
+const modal = document.querySelector('div#modal');
+
+// const modalInstance = Modal.getOrCreateInstance(modal);
+
+const aPostAttributes = [
+  ['target', '_blank'],
+  ['rel', 'noopener noreferrer'],
+];
+const aPostClass = 'fw-bold';
+const aPostViewedClasses = [
+  'fw-normal',
+  'link-secondary',
+];
+const liPostClasses = [
+  'list-group-item',
+  'd-flex',
+  'justify-content-between',
+  'align-items-start',
+  'border-0',
+  'border-end-0',
+];
+const buttonPostAttributes = [
+  ['type', 'button'],
+  ['data-bs-toggle', 'modal'],
+  ['data-bs-target', '#modal'],
+];
+const buttonPostClasses = [
+  'btn',
+  'btn-outline-primary',
+  'btn-sm',
+];
 
 const removeChilds = (element) => {
   while (element.firstChild && element.removeChild(element.firstChild));
+};
+
+const setAttributes = (element, ...attributes) => {
+  attributes.forEach(([name, value]) => {
+    element.setAttribute(name, value);
+  });
 };
 
 const renderFeedback = (state) => {
@@ -54,6 +92,19 @@ const renderFeeds = (feeds) => {
   feedsParent.querySelector('div.card').append(ul);
 };
 
+const getHandler = (aPost, { title, description, link }) => (/* event */) => {
+  // event.preventDefault();
+  // event.stopPropagation();
+  if (aPost.classList.contains(aPostClass)) {
+    aPost.classList.remove(aPostClass);
+    aPost.classList.add(...aPostViewedClasses);
+  }
+  modal.querySelector('h5.modal-title').TextContent = title;
+  modal.querySelector('div.modal-body').TextContent = description;
+  modal.querySelector('a.btn').setAttribute('href', link);
+  // console.log(JSON.stringify(Object.getOwnPropertyNames(modalInstance), null, '  '));
+};
+
 const renderPosts = (posts) => {
   let ul = postsParent.querySelector('ul');
   if (ul) {
@@ -62,17 +113,22 @@ const renderPosts = (posts) => {
     ul = document.createElement('ul');
     ul.classList.add('list-group', 'border-0', 'rounded-0');
   }
-  posts.forEach(({ title, link }, index) => {
+  posts.forEach((post, index) => {
+    const { title, link } = post;
     const li = document.createElement('li');
-    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+    li.classList.add(...liPostClasses);
     const a = document.createElement('a');
-    a.classList.add('fw-bold');
-    a.setAttribute('data-id', index);
-    a.setAttribute('target', '_blank');
-    a.setAttribute('rel', 'noopener noreferrer');
-    a.setAttribute('href', link);
+    a.classList.add(aPostClass);
+    setAttributes(a, ['href', link], ...aPostAttributes, ['data-id', index]);
     a.textContent = title;
     li.append(a);
+    const button = document.createElement('button');
+    setAttributes(button, ...buttonPostAttributes, ['data-id', index]);
+    button.addEventListener('click', getHandler(a, post));
+    button.classList.add(...buttonPostClasses);
+    button.TextContent = 'View';
+    console.log(`button: ${button}; text: ${button.TextContent}`);
+    li.append(button);
     ul.append(li);
   });
   postsParent.querySelector('div.card').append(ul);
