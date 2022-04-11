@@ -6,6 +6,7 @@
     "rss",
     "aggregator"
   ],
+  "main": "src/init.js",
   "scripts": {
     "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
