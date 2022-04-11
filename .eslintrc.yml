@@ -1,7 +1,12 @@
 ---
 
+plugins:
+  - jest
+  - testing-library
+  - jest-dom
+
 env:
-  node: true
+  jest: true
   browser: true
   es2020: true
 
@@ -9,15 +14,17 @@ parser: '@babel/eslint-parser'
 
 extends:
   - 'airbnb-base'
+  - 'plugin:jest/recommended'
+  - 'plugin:testing-library/react'
+  - "plugin:jest-dom/recommended"
 
 parserOptions:
-  ecmaVersion: 11
+  ecmaVersion: latest
   sourceType: module
 
 rules:
   no-console: 0
-  import/extensions: # FIXME: remove when rule will be adjusted for new nodejs version
-    - error
-    - ignorePackages
-    - js: always
   no-underscore-dangle: [2, { "allow": ["__filename", "__dirname"] }]
+  import/extensions: 0
+  import/no-unresolved: 0
+  no-param-reassign: 0
