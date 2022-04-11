@@ -1,7 +1,10 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+import commonjsVariables from 'commonjs-variables-for-esmodules';
+import path from 'path';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 
-module.exports = {
+const { __dirname } = commonjsVariables(import.meta);
+
+export default {
   mode: process.env.NODE_ENV || 'development',
   devtool: 'inline-source-map',
   entry: './src/index.js',

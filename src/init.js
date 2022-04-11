@@ -1,10 +1,10 @@
 import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
-import parse from './parser';
-import watch from './view';
-import ru from './locales/ru';
-import wrap from './utils/wrapper'; // CORS proxy url wrapper
+import parse from './parser.js';
+import watch from './view.js';
+import ru from './locales/ru.js';
+import wrap from './utils/wrapper.js'; // CORS proxy url wrapper
 
 const checkFeedsUpdate = (state) => {
   state.feeds.forEach(({ url }) => {
