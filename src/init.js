@@ -4,7 +4,7 @@ import axios from 'axios';
 import i18next from 'i18next';
 import parse from './parser';
 import watch from './view';
-import en from './locales/en';
+import ru from './locales/ru';
 import wrap from './utils/wrapper'; // CORS proxy url wrapper
 
 const checkFeedsUpdate = (state) => {
@@ -27,10 +27,19 @@ const checkFeedsUpdate = (state) => {
 
 export default () => {
   i18next.init({
-    lng: 'en',
+    lng: 'ru',
     debug: true,
     resources: {
-      en,
+      ru,
+    },
+  });
+  yup.setLocale({
+    mixed: {
+      test: i18next.t('exists'),
+      required: i18next.t('required'),
+    },
+    string: {
+      url: i18next.t('invalid'),
     },
   });
   const state = watch({
@@ -61,7 +70,8 @@ export default () => {
       state.processState = 'validating';
       const schema = yup.object().shape({
         rssLink: yup.string()
-          .url(i18next.t('invalid'))
+          .required()
+          .url()
           .test(
             'isNewUrl',
             i18next.t('exists'),

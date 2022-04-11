@@ -116,7 +116,7 @@ const renderPosts = (state) => {
       a.classList.add(...aPostViewedClasses);
     });
     button.classList.add(...buttonPostClasses);
-    button.textContent = 'View';
+    button.textContent = 'Просмотр';
     li.append(button);
     ul.append(li);
   });
