@@ -1,5 +1,6 @@
 export default (targetUrl) => [
   'https://allorigins.hexlet.app',
   '/get?disableCache=true',
-  `&url=${encodeURIComponent(targetUrl)}`,
+  `&url=${targetUrl}`,
+  // `&url=${encodeURIComponent(targetUrl)}`,
 ].join('');
