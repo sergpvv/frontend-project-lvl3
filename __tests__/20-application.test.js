@@ -1,3 +1,7 @@
+/**
+  * @jest-environment jsdom
+  */
+
 // @ts-check
 
 import '@testing-library/jest-dom';
@@ -10,7 +14,7 @@ import userEventPkg from '@testing-library/user-event';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 
-import init from '@hexlet/code';
+import init from '../src/init.js';
 
 const userEvent = userEventPkg.default;
 
@@ -205,4 +209,3 @@ test('modal', async () => {
   });
   expect(screen.getByRole('link', { name: /Агрегация \/ Python: Деревья/i })).not.toHaveClass('fw-bold');
 });
-
