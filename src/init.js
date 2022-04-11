@@ -1,3 +1,4 @@
+import 'bootstrap';
 import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
@@ -13,7 +14,7 @@ const checkFeedsUpdate = (state) => {
         const { posts } = parse(data);
         posts.forEach((post) => {
           if (!state.posts.some(({ title }) => title === post.title)) {
-            state.posts.push(post);
+            state.posts.push({ ...post, viewed: false });
           }
         });
       })
@@ -21,7 +22,7 @@ const checkFeedsUpdate = (state) => {
         console.log('checkFeedsUpdate axios.get catch error:', error);
       });
   });
-  setTimeout(checkFeedsUpdate, 10000, state);
+  setTimeout(checkFeedsUpdate, 5000, state);
 };
 
 export default () => {
@@ -39,9 +40,20 @@ export default () => {
     feedback: [],
     feeds: [],
     posts: [],
-    displayedPost: -1,
   });
-
+  const modal = document.querySelector('#modal');
+  const getElement = (selector) => modal.querySelector(selector);
+  modal.addEventListener('shown.bs.modal', (event) => {
+    const buttonView = event.relatedTarget;
+    const id = buttonView.getAttribute('data-id');
+    const { title, description, link } = state.posts[id];
+    const modalTitle = getElement('.modal-title');
+    modalTitle.textContent = title;
+    const modalBody = getElement('.modal-body');
+    modalBody.textContent = description;
+    const modalAButton = getElement('a.btn');
+    modalAButton.setAttribute('href', link);
+  });
   document.querySelector('form')
     .addEventListener('submit', (e) => {
       e.preventDefault();
@@ -83,7 +95,9 @@ export default () => {
               console.log('..parsing complete; parsedData: ', parsedData);
               const { title, description, posts } = parsedData;
               state.feeds.push({ url, title, description });
-              state.displayedPost = state.posts.push(...posts);
+              state.displayedPost = state.posts.push(
+                ...posts.map((post) => ({ ...post, viewed: false })),
+              );
               state.feedback.push(i18next.t('success'));
               state.processState = 'processed';
               state.rssLink = '';
@@ -103,5 +117,5 @@ export default () => {
           state.processState = 'filling';
         });
     });
-  setTimeout(checkFeedsUpdate, 5000, state);
+  checkFeedsUpdate(state);
 };
