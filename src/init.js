@@ -90,7 +90,7 @@ export default () => {
           const url = state.rssLink;
           axios.get(wrap(url))
             .then(({ data }) => {
-              console.log('downloaded, parse data..');
+              // console.log('downloaded, parse data: ', data);
               state.feedback.push(i18next.t('downloaded'));
               state.processState = 'downloaded';
               return parse(data);
