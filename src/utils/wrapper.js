@@ -1,6 +1,7 @@
-export default (targetUrl) => [
-  'https://allorigins.hexlet.app',
-  '/get?disableCache=true',
-  `&url=${targetUrl}`,
-  // `&url=${encodeURIComponent(targetUrl)}`,
-].join('');
+export default (rssLink) => {
+  const url = new URL('/get?', 'https://allorigins.hexlet.app');
+  url.searchParams.append('disableCache', true);
+  url.searchParams.append('charset', 'utf-8');
+  url.searchParams.append('url', rssLink);
+  return url.toString();
+};
