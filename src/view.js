@@ -2,40 +2,6 @@
 
 import onChange from 'on-change';
 
-const input = document.querySelector('input#url-input');
-const addButton = document.querySelector('button[type=submit]');
-const feedback = document.querySelector('p.feedback');
-const postsParent = document.querySelector('div.posts');
-const feedsParent = document.querySelector('div.feeds');
-
-const aPostAttributes = [
-  ['target', '_blank'],
-  ['rel', 'noopener noreferrer'],
-];
-const aPostClass = 'fw-bold';
-const aPostViewedClasses = [
-  'fw-normal',
-  'link-secondary',
-];
-const liPostClasses = [
-  'list-group-item',
-  'd-flex',
-  'justify-content-between',
-  'align-items-start',
-  'border-0',
-  'border-end-0',
-];
-const buttonPostAttributes = [
-  ['type', 'button'],
-  ['data-bs-toggle', 'modal'],
-  ['data-bs-target', '#modal'],
-];
-const buttonPostClasses = [
-  'btn',
-  'btn-outline-primary',
-  'btn-sm',
-];
-
 const removeChilds = (element) => {
   while (element.firstChild && element.removeChild(element.firstChild));
 };
@@ -47,6 +13,7 @@ const setAttributes = (element, ...attributes) => {
 };
 
 const renderFeedback = (state) => {
+  const feedback = document.querySelector('.feedback');
   feedback.textContent = '';
   const { processState } = state;
   // console.log(`renderFeedback processState: ${processState}; feedback: ${state.feedback}`);
@@ -65,6 +32,7 @@ const renderFeedback = (state) => {
 };
 
 const renderFeeds = (feeds) => {
+  const feedsParent = document.querySelector('.feeds');
   let ul = feedsParent.querySelector('ul');
   if (!ul) {
     ul = document.createElement('ul');
@@ -87,6 +55,35 @@ const renderFeeds = (feeds) => {
 };
 
 const renderPosts = (state) => {
+  const aPostAttributes = [
+    ['target', '_blank'],
+    ['rel', 'noopener noreferrer'],
+  ];
+  const aPostClass = 'fw-bold';
+  const aPostViewedClasses = [
+    'fw-normal',
+    'link-secondary',
+  ];
+  const liPostClasses = [
+    'list-group-item',
+    'd-flex',
+    'justify-content-between',
+    'align-items-start',
+    'border-0',
+    'border-end-0',
+  ];
+  const buttonPostAttributes = [
+    ['type', 'button'],
+    ['data-bs-toggle', 'modal'],
+    ['data-bs-target', '#modal'],
+  ];
+  const buttonPostClasses = [
+    'btn',
+    'btn-outline-primary',
+    'btn-sm',
+  ];
+
+  const postsParent = document.querySelector('.posts');
   let ul = postsParent.querySelector('ul');
   if (ul) {
     removeChilds(ul);
@@ -123,65 +120,69 @@ const renderPosts = (state) => {
   postsParent.querySelector('.card').append(ul);
 };
 
-export default (state) => onChange(
-  state,
-  (path, value) => {
-    console.log(`path: ${path}; value: ${value}`);
-    switch (path) {
-      case 'validationState':
-        switch (value) {
-          case 'valid':
-            input.classList.remove('is-invalid');
-            input.classList.add('is-valid');
-            break;
-          case 'invalid':
-            addButton.disabled = false;
-            input.classList.remove('is-valid');
-            input.classList.add('is-invalid');
-            break;
-          case 'none':
-            input.classList.remove('is-valid');
-            input.classList.remove('is-invalid');
-            break;
-          default:
-            console.log('validationState switch(value) default: ', value);
-        }
-        break;
-      case 'processState':
-        renderFeedback(state);
-        switch (value) {
-          case 'filling':
-            addButton.disabled = false;
-            break;
-          case 'failure':
-            addButton.disabled = false;
-            state.processState = 'filling';
-            break;
-          case 'validating':
-            addButton.disabled = true;
-            break;
-          case 'sending':
-            addButton.disabled = true;
-            break;
-          case 'downloaded':
-            addButton.disabled = true;
-            break;
-          case 'processed':
-            addButton.disabled = false;
-            state.processState = 'filling';
-            break;
-          default:
-            console.log('processState switch(value) default: ', value);
-        }
-        break;
-      case 'posts':
-        renderPosts(state);
-        break;
-      case 'feeds':
-        renderFeeds(state.feeds);
-        break;
-      default:
-        console.log('switch(path) default: ', path);
-    }
-  },
-);
+export default (state) => {
+  const input = document.querySelector('#url-input');
+  const addButton = document.querySelector('button[type=submit]');
+  return onChange(
+    state,
+    (path, value) => {
+      console.log(`path: ${path}; value: ${value}`);
+      switch (path) {
+        case 'validationState':
+          switch (value) {
+            case 'valid':
+              input.classList.remove('is-invalid');
+              input.classList.add('is-valid');
+              break;
+            case 'invalid':
+              addButton.disabled = false;
+              input.classList.remove('is-valid');
+              input.classList.add('is-invalid');
+              break;
+            case 'none':
+              input.classList.remove('is-valid');
+              input.classList.remove('is-invalid');
+              break;
+            default:
+              console.log('validationState switch(value) default: ', value);
+          }
+          break;
+        case 'processState':
+          renderFeedback(state);
+          switch (value) {
+            case 'filling':
+              addButton.disabled = false;
+              break;
+            case 'failure':
+              addButton.disabled = false;
+              state.processState = 'filling';
+              break;
+            case 'validating':
+              addButton.disabled = true;
+              break;
+            case 'sending':
+              addButton.disabled = true;
+              break;
+            case 'downloaded':
+              addButton.disabled = true;
+              break;
+            case 'processed':
+              addButton.disabled = false;
+              state.processState = 'filling';
+              break;
+            default:
+              console.log('processState switch(value) default: ', value);
+          }
+          break;
+        case 'posts':
+          renderPosts(state);
+          break;
+        case 'feeds':
+          renderFeeds(state.feeds);
+          break;
+        default:
+          console.log('switch(path) default: ', path);
+      }
+    },
+  );
+};
