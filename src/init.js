@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import parse from './parser.js';
 import watch from './view.js';
 import ru from './locales/ru.js';
-import proxify from './utils/wrapper.js';
+import proxify from './proxifier.js';
 
 const checkFeedsUpdate = (state) => {
   state.feeds.forEach(({ url }) => {
@@ -109,14 +109,13 @@ export default () => {
               state.processState = 'success';
               state.validationState = null;
             })
-            .catch((error) => {
-              const { message } = error;
-              const [, errorMessage] = message.split(' ', 2);
-              console.error(`message: ${message}; errorMessage: ${errorMessage}`);
-              if (errorMessage !== 'parserror') {
-                state.processState = 'failure';
+            .catch(({ message }) => {
+              if (message === 'parserror') {
+                state.processState = 'parserror';
+                return;
               }
-              console.log(`axios.get cath: ${error}; ${message}`);
+              state.processState = 'failure';
+              console.log(`axios.get cath: ${message}`);
             });
         })
         .catch((error) => {

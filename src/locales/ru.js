@@ -1,5 +1,6 @@
 export default {
   translation: {
+    validating: 'Проверка введённой ссылки',
     invalid: 'Ссылка должна быть валидным URL',
     exists: 'RSS уже существует',
     parserror: 'Ресурс не содержит валидный RSS',

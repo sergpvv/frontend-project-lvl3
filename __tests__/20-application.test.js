@@ -79,7 +79,7 @@ beforeEach(async () => {
 afterEach(() => {
   server.resetHandlers();
 });
-
+/*
 test('adding', async () => {
   const handler = getResponseHandler(rssUrl, rss1);
   server.use(handler);
@@ -190,7 +190,7 @@ describe('load feeds', () => {
     expect(await screen.findByRole('link', { name: /Traversal \/ Python: Деревья/i })).toBeInTheDocument();
   });
 });
-
+*/
 test('modal', async () => {
   const handler = getResponseHandler(rssUrl, rss1);
   server.use(handler);
@@ -199,9 +199,11 @@ test('modal', async () => {
   await user.click(screen.getByRole('button', { name: 'add' }));
 
   const previewBtns = await screen.findAllByRole('button', { name: /Просмотр/i });
+  console.log((new XMLSerializer()).serializeToString(previewBtns[0]));
   expect(screen.getByRole('link', { name: /Агрегация \/ Python: Деревья/i })).toHaveClass('fw-bold');
   await user.click(previewBtns[0]);
   const modalBody = await screen.findByText('Цель: Научиться извлекать из дерева необходимые данные');
+  console.log('modalBody: ', (new XMLSerializer()).serializeToString(modalBody));
   await waitFor(() => {
     expect(modalBody).toBeVisible();
   });

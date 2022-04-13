@@ -4,6 +4,6 @@ export default (url) => {
   proxifiedUrl.searchParams.append('disableCache', true);
   proxifiedUrl.searchParams.append('url', url);
   const result = proxifiedUrl.toString();
-  console.log(`proxifiedUrl: ${proxifiedUrl}; toString: ${result}`);
+  // console.log(`proxifiedUrl: ${proxifiedUrl}; toString: ${result}`);
   return result;
 };

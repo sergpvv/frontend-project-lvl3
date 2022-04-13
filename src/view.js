@@ -45,7 +45,7 @@ const renderFeeds = (feeds) => {
   feedsParent.querySelector('div.card').append(ul);
 };
 
-const renderPosts = (state) => {
+const renderPosts = (state, i18nView) => {
   const aPostAttributes = [
     ['target', '_blank'],
     ['rel', 'noopener noreferrer'],
@@ -89,11 +89,12 @@ const renderPosts = (state) => {
     li.classList.add(...liPostClasses);
     const a = document.createElement('a');
     if (viewed) {
+      a.classList.remove(aPostClass);
       a.classList.add(...aPostViewedClasses);
     } else {
       a.classList.add(aPostClass);
     }
-    setAttributes(a, ['href', link], ...aPostAttributes, ['data-id', index]);
+    setAttributes(a, ['href', link], ['name', i18nView], ...aPostAttributes, ['data-id', index]);
     a.textContent = title;
     li.append(a);
     const button = document.createElement('button');
@@ -104,7 +105,7 @@ const renderPosts = (state) => {
       a.classList.add(...aPostViewedClasses);
     });
     button.classList.add(...buttonPostClasses);
-    button.textContent = 'Просмотр';
+    button.textContent = i18nView;
     li.append(button);
     ul.append(li);
   });
@@ -141,7 +142,7 @@ export default (state, i18n) => {
               renderFeedback(i18n.t('exists'), 'danger');
               input.removeAttribute('readonly');
               addButton.disabled = false;
-              input.textContent = '';
+              input.value = '';
               break;
             default:
               console.log('validationState switch(value) default: ', value);
@@ -149,8 +150,13 @@ export default (state, i18n) => {
           break;
         case 'processState':
           switch (value) {
+            case 'parserror':
+              renderFeedback(i18n.t('parserror'), 'danger');
+              input.removeAttribute('readonly');
+              addButton.disabled = false;
+              break;
             case 'success':
-              input.textContent = '';
+              input.value = '';
               renderFeedback(i18n.t('success'), 'success');
               input.removeAttribute('readonly');
               addButton.disabled = false;
@@ -181,7 +187,7 @@ export default (state, i18n) => {
           }
           break;
         case 'posts':
-          renderPosts(state);
+          renderPosts(state, i18n.t('view'));
           break;
         case 'feeds':
           renderFeeds(state.feeds);
