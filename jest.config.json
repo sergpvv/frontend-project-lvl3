@@ -1,12 +1,5 @@
 {
-  "testEnvironment": "jsdom",
-  "transform": {
-    "\\.js$": [
-      "babel-jest",
-      {
-        "configFile": "./babel.config.json"
-      }
-    ]
-  },
+  "testEnvironment": "jest-environment-jsdom",
+  "transform": {},
   "verbose": true
 }

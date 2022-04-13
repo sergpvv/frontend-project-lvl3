@@ -10,7 +10,7 @@
   "type": "module",
   "scripts": {
     "build": "webpack",
-    "test": "jest --colors"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --colors"
   },
   "repository": {
     "type": "git",

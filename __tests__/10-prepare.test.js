@@ -20,6 +20,5 @@ test('entry point', async () => {
 
   const entryPointModule = await import(entryPointPath);
   console.log('entryPointPath: ', entryPointPath, '; entryPointModule: ', entryPointModule);
-  // expect(typeof entryPointModule.default).toEqual('function');
-  expect(typeof codePath).toEqual('string');
+  expect(typeof entryPointModule.default).toEqual('function');
 });

@@ -1,7 +1,3 @@
-/**
-  * @jest-environment jsdom
-  */
-
 // @ts-check
 
 import '@testing-library/jest-dom';
@@ -36,7 +32,7 @@ const htmlUrl = 'https://ru.hexlet.io';
 const corsProxy = 'https://allorigins.hexlet.app';
 const corsProxyApi = `${corsProxy}/get`;
 
-const index = path.join('..', 'code', 'index.html');
+const index = path.join('..', 'index.html');
 const initHtml = fs.readFileSync(new URL(index, import.meta.url), 'utf-8');
 
 const getResponseHandler = (url, data) => rest.get(corsProxyApi, (req, res, ctx) => {
