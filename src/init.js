@@ -48,6 +48,7 @@ export default () => {
     feeds: [],
     posts: [],
   }, i18next);
+  /*
   const modal = document.querySelector('#modal');
   const getElement = (selector) => modal.querySelector(selector);
   modal.addEventListener('shown.bs.modal', (event) => {
@@ -61,6 +62,7 @@ export default () => {
     const modalAButton = getElement('a.btn');
     modalAButton.setAttribute('href', link);
   });
+*/
   document.querySelector('form')
     .addEventListener('submit', (e) => {
       e.preventDefault();

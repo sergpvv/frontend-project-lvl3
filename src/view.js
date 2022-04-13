@@ -1,6 +1,5 @@
-/* eslint no-param-reassign: ["error", { "props": false }] */
-
 import onChange from 'on-change';
+import * as bs from 'bootstrap';
 
 const removeChilds = (element) => {
   while (element.firstChild && element.removeChild(element.firstChild));
@@ -73,7 +72,6 @@ const renderPosts = (state, i18nView) => {
     'btn-outline-primary',
     'btn-sm',
   ];
-
   const postsParent = document.querySelector('.posts');
   let ul = postsParent.querySelector('ul');
   if (ul) {
@@ -84,28 +82,63 @@ const renderPosts = (state, i18nView) => {
   }
   const { posts } = state;
   posts.forEach((post, index) => {
-    const { title, link, viewed } = post;
+    const {
+      title, description, link, viewed,
+    } = post;
+
     const li = document.createElement('li');
     li.classList.add(...liPostClasses);
+
     const a = document.createElement('a');
     if (viewed) {
-      a.classList.remove(aPostClass);
+      // a.classList.remove(aPostClass);
       a.classList.add(...aPostViewedClasses);
     } else {
       a.classList.add(aPostClass);
     }
-    setAttributes(a, ['href', link], ['name', i18nView], ...aPostAttributes, ['data-id', index]);
+    setAttributes(a, ['href', link], ...aPostAttributes, ['data-id', index]);
     a.textContent = title;
     li.append(a);
+
     const button = document.createElement('button');
     setAttributes(button, ...buttonPostAttributes, ['data-id', index]);
-    button.addEventListener('click', () => {
-      posts[index].viewed = true;
-      a.classList.remove(aPostClass);
-      a.classList.add(...aPostViewedClasses);
-    });
     button.classList.add(...buttonPostClasses);
     button.textContent = i18nView;
+
+    const modalNode = document.querySelector('#modal');
+    const modalBootstarpEl = new bs.Modal(
+      modalNode,
+      {
+        backdrop: true,
+        keyboard: true,
+        focus: true,
+      },
+    );
+    button.addEventListener('click', ({ target }) => {
+      //e.preventDefault();
+      //e.stopPropagation();
+      const aPostEl = target.previousSibling;
+      const getElement = (selector) => modalNode.querySelector(selector);
+      const modalTitle = getElement('.modal-title');
+      modalTitle.textContent = title;
+      const modalBody = getElement('.modal-body');
+      modalBody.textContent = description;
+      const modalAButton = getElement('a.btn');
+      modalAButton.setAttribute('href', link);
+      const modalCloseButtons = modalNode.querySelectorAll('button[type="button"]');
+      modalCloseButtons.forEach((modalCloseButton) => {
+        modalCloseButton.addEventListener('click', (event) => {
+          //event.preventDefault();
+          //event.stopPropagation();
+          modalBootstarpEl.hide();
+        });
+      });
+      modalBootstarpEl.show();
+      const id = target.getAttribute('data-id');
+      state.posts[id].viewed = true;
+      aPostEl.classList.remove(aPostClass);
+      aPostEl.classList.add(...aPostViewedClasses);
+    });
     li.append(button);
     ul.append(li);
   });
