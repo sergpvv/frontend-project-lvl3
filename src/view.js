@@ -12,22 +12,13 @@ const setAttributes = (element, ...attributes) => {
   });
 };
 
-const renderFeedback = (state) => {
+const renderFeedback = (message, type) => {
   const feedback = document.querySelector('.feedback');
-  feedback.textContent = '';
-  const { processState } = state;
-  // console.log(`renderFeedback processState: ${processState}; feedback: ${state.feedback}`);
-  if (state.feedback.length > 0) {
-    const alerts = {
-      sending: 'secondary',
-      downloaded: 'info',
-      processed: 'success',
-    };
-    const classes = ['secondary', 'info', 'success', 'danger'];
-    const type = alerts[processState] || 'danger';
-    feedback.classList.remove(...classes.map((name) => `text-${name}`));
+  feedback.textContent = message;
+  const classes = ['secondary', 'info', 'success', 'danger'];
+  feedback.classList.remove(...classes.map((name) => `text-${name}`));
+  if (message !== '') {
     feedback.classList.add(`text-${type}`);
-    feedback.textContent = state.feedback.pop();
   }
 };
 
@@ -120,7 +111,7 @@ const renderPosts = (state) => {
   postsParent.querySelector('.card').append(ul);
 };
 
-export default (state) => {
+export default (state, i18n) => {
   const input = document.querySelector('#url-input');
   const addButton = document.querySelector('button[type=submit]');
   return onChange(
@@ -131,46 +122,61 @@ export default (state) => {
         case 'validationState':
           switch (value) {
             case 'valid':
+              renderFeedback('');
               input.classList.remove('is-invalid');
               input.classList.add('is-valid');
               break;
             case 'invalid':
+              renderFeedback(i18n.t('invalid'), 'danger');
               addButton.disabled = false;
               input.classList.remove('is-valid');
               input.classList.add('is-invalid');
+              input.removeAttribute('readonly');
               break;
-            case 'none':
+            case null:
               input.classList.remove('is-valid');
               input.classList.remove('is-invalid');
+              break;
+            case 'exists':
+              renderFeedback(i18n.t('exists'), 'danger');
+              input.removeAttribute('readonly');
+              addButton.disabled = false;
+              input.textContent = '';
               break;
             default:
               console.log('validationState switch(value) default: ', value);
           }
           break;
         case 'processState':
-          renderFeedback(state);
           switch (value) {
-            case 'filling':
+            case 'success':
+              input.textContent = '';
+              renderFeedback(i18n.t('success'), 'success');
+              input.removeAttribute('readonly');
               addButton.disabled = false;
               break;
             case 'failure':
+              renderFeedback(i18n.t('failure'), 'failure');
+              input.removeAttribute('readonly');
               addButton.disabled = false;
-              state.processState = 'filling';
               break;
             case 'validating':
+              renderFeedback(i18n.t('validating'), 'info');
+              input.setAttribute('readonly', true);
               addButton.disabled = true;
               break;
             case 'sending':
+              renderFeedback(i18n.t('sending'), 'info');
+              input.setAttribute('readonly', true);
               addButton.disabled = true;
               break;
             case 'downloaded':
+              renderFeedback(i18n.t('downloaded'), 'info');
+              input.setAttribute('readonly', true);
               addButton.disabled = true;
               break;
-            case 'processed':
-              addButton.disabled = false;
-              state.processState = 'filling';
-              break;
             default:
+              renderFeedback(i18n.t('unknown'), 'secondary');
               console.log('processState switch(value) default: ', value);
           }
           break;

@@ -34,21 +34,20 @@ export default () => {
   });
   yup.setLocale({
     mixed: {
-      test: i18next.t('exists'),
-      required: i18next.t('required'),
+      test: 'exists',
+      required: 'required',
     },
     string: {
-      url: i18next.t('invalid'),
+      url: 'invalid',
     },
   });
   const state = watch({
-    processState: 'filling', // validating, sending, failure, downloaded, processed
-    rssLink: '',
-    validationState: 'none', // invalid, valid
-    feedback: [],
+    processState: null, // validating, sending, failure, downloaded, success
+    rssLink: null,
+    validationState: null, // required, valid, invalid
     feeds: [],
     posts: [],
-  });
+  }, i18next);
   const modal = document.querySelector('#modal');
   const getElement = (selector) => modal.querySelector(selector);
   modal.addEventListener('shown.bs.modal', (event) => {
@@ -82,59 +81,70 @@ export default () => {
       });
       schema
         .validate(state, { strict: true, abortEarly: false })
-        .then((stateObject) => {
-          console.log('schema validate then, stateObject: ', stateObject);
+        .then((/* stateObject */) => {
+          // console.log('schema validate then, stateObject: ', stateObject);
           state.validationState = 'valid';
-          state.feedback.push(i18next.t('sending'));
           state.processState = 'sending';
           const url = state.rssLink;
           axios.get(proxify(url))
             .then(({ data }) => {
               // console.log('downloaded, parse data: ', data);
-              state.feedback.push(i18next.t('downloaded'));
               state.processState = 'downloaded';
               return parse(data);
             })
             .then((parsedData) => {
               if (!parsedData) {
-                console.log('parsedData: ', parsedData);
-                state.feedback.push(i18next.t('parserror'));
+                // console.log('parsedData: ', parsedData);
+                state.processState = 'parserror';
                 throw new Error('parserror');
               }
-              console.log('..parsing complete; parsedData: ', parsedData);
+              // console.log('..parsing complete; parsedData: ', parsedData);
               const { title, description, posts } = parsedData;
               state.feeds.push({ url, title, description });
-              state.displayedPost = state.posts.push(
+              state.posts = [
+                ...state.posts,
                 ...posts.map((post) => ({ ...post, viewed: false })),
-              );
-              state.feedback.push(i18next.t('success'));
-              state.processState = 'processed';
+              ];
               state.rssLink = '';
-              state.validationState = 'none';
+              state.processState = 'success';
+              state.validationState = null;
             })
             .catch((error) => {
               const { message } = error;
-              state.feedback.push(i18next.t('failure'));
-              state.processState = 'failure';
-              console.log(`axios.get cath, error: ${error}; ${message}`);
+              const [, errorMessage] = message.split(' ', 2);
+              console.error(`message: ${message}; errorMessage: ${errorMessage}`);
+              if (errorMessage !== 'parserror') {
+                state.processState = 'failure';
+              }
+              console.log(`axios.get cath: ${error}; ${message}`);
             });
         })
         .catch((error) => {
-          console.log('schema validate catch, error: ', error);
+          console.log('schema validate catch: ', error);
           let errorMessage = 'unknown';
           switch (typeof error) {
             case 'object':
               errorMessage = error.message;
               break;
             case 'string':
-              errorMessage = error.split(' ').pop();
+              errorMessage = error.split(' ', 2).pop();
               break;
             default:
               console.log('switch typeof(error) default: ', typeof error);
           }
-          state.feedback.push(i18next.t(errorMessage));
-          state.validationState = 'invalid';
-          state.processState = 'filling';
+          switch (errorMessage) {
+            case 'exists':
+              state.validationState = 'exists';
+              break;
+            case 'invalid':
+              state.validationState = 'invalid';
+              break;
+            case 'required':
+              state.validationState = 'required';
+              break;
+            default:
+              console.log('schema validate catch, switch(errorMessage) default: ', errorMessage);
+          }
         });
     });
   checkFeedsUpdate(state);
