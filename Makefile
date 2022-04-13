@@ -14,3 +14,5 @@ build:
 lint:
 	npx eslint . --fix
 
+test:
+	npm test -- -u

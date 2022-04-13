@@ -7,5 +7,6 @@ export default {
     failure: 'Feed was not added due to network failures.',
     sending: 'Sending fetch request.',
     downloaded: 'Data download complete.',
+    unknown: 'Something went wrong.',
   },
 };

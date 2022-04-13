@@ -4,11 +4,11 @@ import i18next from 'i18next';
 import parse from './parser.js';
 import watch from './view.js';
 import ru from './locales/ru.js';
-import wrap from './utils/wrapper.js'; // CORS proxy url wrapper
+import proxify from './utils/wrapper.js';
 
 const checkFeedsUpdate = (state) => {
   state.feeds.forEach(({ url }) => {
-    axios.get(wrap(url))
+    axios.get(proxify(url))
       .then(({ data }) => {
         const { posts } = parse(data);
         posts.forEach((post) => {
@@ -73,7 +73,7 @@ export default () => {
           .url()
           .test(
             'isNewUrl',
-            i18next.t('exists'),
+            'exists',
             (testUrl, { parent }) => {
               const { feeds } = parent;
               return !feeds.some(({ url }) => url === testUrl);
@@ -83,12 +83,12 @@ export default () => {
       schema
         .validate(state, { strict: true, abortEarly: false })
         .then((stateObject) => {
-          console.log('validate then, stateObject: ', stateObject);
+          console.log('schema validate then, stateObject: ', stateObject);
           state.validationState = 'valid';
           state.feedback.push(i18next.t('sending'));
           state.processState = 'sending';
           const url = state.rssLink;
-          axios.get(wrap(url))
+          axios.get(proxify(url))
             .then(({ data }) => {
               // console.log('downloaded, parse data: ', data);
               state.feedback.push(i18next.t('downloaded'));
@@ -119,9 +119,20 @@ export default () => {
               console.log(`axios.get cath, error: ${error}; ${message}`);
             });
         })
-        .catch((errorMessage) => {
-          console.log('errorMessage: ', errorMessage);
-          state.feedback.push(errorMessage);
+        .catch((error) => {
+          console.log('schema validate catch, error: ', error);
+          let errorMessage = 'unknown';
+          switch (typeof error) {
+            case 'object':
+              errorMessage = error.message;
+              break;
+            case 'string':
+              errorMessage = error.split(' ').pop();
+              break;
+            default:
+              console.log('switch typeof(error) default: ', typeof error);
+          }
+          state.feedback.push(i18next.t(errorMessage));
           state.validationState = 'invalid';
           state.processState = 'filling';
         });

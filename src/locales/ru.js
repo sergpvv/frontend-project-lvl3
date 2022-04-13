@@ -7,6 +7,7 @@ export default {
     failure: 'Ошибка сети',
     sending: 'Отправка запроса',
     downloaded: 'Получены данные',
+    unknown: 'Что-то пошло не так',
     view: 'Просмотр',
   },
 };

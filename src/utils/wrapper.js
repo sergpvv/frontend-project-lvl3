@@ -1,7 +1,9 @@
-export default (rssLink) => {
-  const url = new URL('/get?', 'https://allorigins.hexlet.app');
-  url.searchParams.append('disableCache', true);
-  url.searchParams.append('charset', 'utf-8');
-  url.searchParams.append('url', rssLink);
-  return url.toString();
+export default (url) => {
+  const corsProxy = 'https://allorigins.hexlet.app';
+  const proxifiedUrl = new URL('/get', corsProxy);
+  proxifiedUrl.searchParams.append('disableCache', true);
+  proxifiedUrl.searchParams.append('url', url);
+  const result = proxifiedUrl.toString();
+  console.log(`proxifiedUrl: ${proxifiedUrl}; toString: ${result}`);
+  return result;
 };
