@@ -10,14 +10,28 @@ const setAttributes = (element, ...attributes) => {
   });
 };
 
-const renderFeedback = (message, type) => {
+const renderFeedback = (message, i18n) => {
   const feedback = document.querySelector('.feedback');
-  feedback.textContent = message;
+  if (message === 'valid') {
+    feedback.textContent = '';
+    return;
+  }
+  const types = {
+    required: 'danger',
+    invalid: 'danger',
+    exists: 'danger',
+    parserror: 'danger',
+    success: 'success',
+    failure: 'danger',
+    validating: 'info',
+    sending: 'info',
+    downloaded: 'info',
+    unknown: 'secondary',
+  };
+  feedback.textContent = i18n.t(message);
   const classes = ['secondary', 'info', 'success', 'danger'];
   feedback.classList.remove(...classes.map((name) => `text-${name}`));
-  if (message !== '') {
-    feedback.classList.add(`text-${type}`);
-  }
+  feedback.classList.add(`text-${types[message]}`);
 };
 
 const renderFeeds = (feeds) => {
@@ -144,7 +158,6 @@ const renderPosts = (state, i18nView) => {
     li.append(button);
     ul.append(li);
   });
-  // postsParent.querySelector('.card').append(ul);
 };
 
 export default (state, i18n) => {
@@ -155,71 +168,35 @@ export default (state, i18n) => {
     (path, value) => {
       console.log(`path: ${path}; value: ${value}`);
       switch (path) {
+        case 'lockInput':
+          addButton.disabled = value;
+          input.readOnly = value;
+          break;
         case 'validationState':
+          renderFeedback(value, i18n);
           switch (value) {
+            case 'required':
+              input.className.replace('is-valid', 'is-invalid');
+              break;
             case 'valid':
-              renderFeedback('');
-              input.classList.remove('is-invalid');
-              input.classList.add('is-valid');
+              input.className.replace('is-invalid', 'is-valid');
               break;
             case 'invalid':
-              renderFeedback(i18n.t('invalid'), 'danger');
-              addButton.disabled = false;
-              input.classList.remove('is-valid');
-              input.classList.add('is-invalid');
-              input.removeAttribute('readonly');
+              input.className.replace('is-valid', 'is-invalid');
               break;
             case null:
-              input.classList.remove('is-valid');
-              input.classList.remove('is-invalid');
+              input.classList.remove('is-valid', 'is-invalid');
+              input.value = '';
               break;
             case 'exists':
-              renderFeedback(i18n.t('exists'), 'danger');
-              input.removeAttribute('readonly');
-              addButton.disabled = false;
               input.value = '';
               break;
             default:
-              console.log('validationState switch(value) default: ', value);
+              console.error('validationState switch(value) default: ', value);
           }
           break;
         case 'processState':
-          switch (value) {
-            case 'parserror':
-              renderFeedback(i18n.t('parserror'), 'danger');
-              input.removeAttribute('readonly');
-              addButton.disabled = false;
-              break;
-            case 'success':
-              input.value = '';
-              renderFeedback(i18n.t('success'), 'success');
-              input.removeAttribute('readonly');
-              addButton.disabled = false;
-              break;
-            case 'failure':
-              renderFeedback(i18n.t('failure'), 'danger');
-              input.removeAttribute('readonly');
-              addButton.disabled = false;
-              break;
-            case 'validating':
-              renderFeedback(i18n.t('validating'), 'info');
-              input.setAttribute('readonly', true);
-              addButton.disabled = true;
-              break;
-            case 'sending':
-              renderFeedback(i18n.t('sending'), 'info');
-              input.setAttribute('readonly', true);
-              addButton.disabled = true;
-              break;
-            case 'downloaded':
-              renderFeedback(i18n.t('downloaded'), 'info');
-              input.setAttribute('readonly', true);
-              addButton.disabled = true;
-              break;
-            default:
-              renderFeedback(i18n.t('unknown'), 'secondary');
-              console.log('processState switch(value) default: ', value);
-          }
+          renderFeedback(value, i18n);
           break;
         case 'posts':
           renderPosts(state, i18n.t('view'));
@@ -228,7 +205,7 @@ export default (state, i18n) => {
           renderFeeds(state.feeds);
           break;
         default:
-          console.log('switch(path) default: ', path);
+          console.error('switch(path) default: ', path);
       }
     },
   );

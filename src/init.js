@@ -47,6 +47,7 @@ export default () => {
   const state = watch({
     processState: null, // validating, sending, failure, downloaded, success
     validationState: null, // required, valid, invalid
+    lockInput: null,
     feeds: [],
     posts: [],
     pointerToNewPosts: null,
@@ -99,6 +100,7 @@ export default () => {
     .addEventListener('submit', (e) => {
       e.preventDefault();
       state.processState = 'validating';
+      state.lockInput = true;
       const rssUrl = e.target.querySelector('#url-input').value;
       validate(rssUrl, state.feeds)
         .then((validUrl) => {
@@ -107,36 +109,23 @@ export default () => {
           return axios.get(proxify(validUrl));
         })
         .then(({ data }) => {
-          console.log('downloaded, parse data: ', data);
+          // console.log('downloaded, parse data: ', data);
           state.processState = 'downloaded';
           return parse(data);
         })
         .then((parsedData) => {
-          console.log('..parsing complete; parsedData: ', parsedData);
+          // console.log('..parsing complete; parsedData: ', parsedData);
           const { title, description, posts } = parsedData;
           state.feeds.push({ url: rssUrl, title, description });
           state.pointerToNewPosts = state.posts.length;
-          state.posts = [
-            ...state.posts,
-            ...posts,
-          ];
+          state.posts.push(...posts);
           state.processState = 'success';
           state.validationState = null;
+          state.lockInput = false;
         })
-        .catch((error) => {
-          // console.error('catch: ', error);
-          let errorMessage = 'unknown';
-          switch (typeof error) {
-            case 'object':
-              errorMessage = error.message;
-              break;
-            case 'string':
-              errorMessage = error.split(' ', 2).pop();
-              break;
-            default:
-              console.log('switch typeof(error) default: ', typeof error);
-          }
-          switch (errorMessage) {
+        .catch(({ message }) => {
+          state.lockInput = false;
+          switch (message) {
             case 'exists':
               state.validationState = 'exists';
               break;
@@ -153,7 +142,7 @@ export default () => {
               state.processState = 'failure';
               break;
             default:
-              console.log('schema validate catch, switch(errorMessage) default: ', errorMessage);
+              console.error('switch(message) default: ', message);
           }
         });
     });

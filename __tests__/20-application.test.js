@@ -41,7 +41,7 @@ const getResponseHandler = (url, data) => rest.get(corsProxyApi, (req, res, ctx)
   }
 
   const paramUrl = req.url.searchParams.get('url');
-  if (paramUrl !== url) {
+  if ((url !== '') && (paramUrl !== url)) {
     console.error('Expect proxified url to have "url" param with correct url');
     return res(ctx.status(500));
   }
@@ -107,6 +107,12 @@ test('validation (valid url)', async () => {
   await user.type(screen.getByRole('textbox', { name: 'url' }), 'wrong');
   await user.click(screen.getByRole('button', { name: 'add' }));
   expect(await screen.findByText(/Ссылка должна быть валидным URL/i)).toBeInTheDocument();
+});
+
+test('validation (not empty)', async () => {
+  // await user.type(screen.getByRole('textbox', { name: 'url' }), '');
+  await user.click(screen.getByRole('button', { name: 'add' }));
+  expect(await screen.findByText(/Значение должно быть не пустым/i)).toBeInTheDocument();
 });
 
 test('handling non-rss url', async () => {
