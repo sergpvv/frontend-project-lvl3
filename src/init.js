@@ -1,27 +1,30 @@
-import * as yup from 'yup';
 import axios from 'axios';
 import i18next from 'i18next';
+import { setLocale } from 'yup';
 import parse from './parser.js';
 import watch from './view.js';
 import ru from './locales/ru.js';
 import proxify from './proxifier.js';
+import validate from './validator.js';
+
+const processPosts = (posts, state) => {
+  posts.forEach((post) => {
+    if (!state.posts.some(({ title }) => title === post.title)) {
+      state.posts.push(post);
+    }
+  });
+};
 
 const checkFeedsUpdate = (state) => {
-  state.feeds.forEach(({ url }) => {
+  Promise.all(state.feeds.map(({ url }) => (
     axios.get(proxify(url))
-      .then(({ data }) => {
-        const { posts } = parse(data);
-        posts.forEach((post) => {
-          if (!state.posts.some(({ title }) => title === post.title)) {
-            state.posts.push({ ...post, viewed: false });
-          }
-        });
-      })
+      .then(({ data }) => parse(data))
+      .then(({ posts }) => processPosts(posts, state))
       .catch((error) => {
-        console.log('checkFeedsUpdate axios.get catch error:', error);
-      });
-  });
-  setTimeout(checkFeedsUpdate, 5000, state);
+        console.log('checkFeedsUpdate axios.get catch error: ', error);
+      })
+  )))
+    .then(() => setTimeout(checkFeedsUpdate, 5000, state));
 };
 
 export default () => {
@@ -32,7 +35,7 @@ export default () => {
       ru,
     },
   });
-  yup.setLocale({
+  setLocale({
     mixed: {
       test: 'exists',
       required: 'required',
@@ -43,10 +46,10 @@ export default () => {
   });
   const state = watch({
     processState: null, // validating, sending, failure, downloaded, success
-    rssLink: null,
     validationState: null, // required, valid, invalid
     feeds: [],
     posts: [],
+    pointerToNewPosts: null,
   }, i18next);
   /*
   const modal = document.querySelector('#modal');
@@ -63,65 +66,65 @@ export default () => {
     modalAButton.setAttribute('href', link);
   });
 */
+  /*
+ *  const getFormHandler = (state) => (event) => {
+ *    event.preventDefault();
+ *    state.processState = 'validating';
+ *    const rssUrl = event.target.querySelector('#url-input').value;
+ *    validate(rssUrl)
+ *      .then((validUrl) => getHtml(validUrl))
+ *      .then((recaivedHtml) => parse(recaivedHtml))
+ *      .then((parsedData) => processPosts(parsedData, state))
+ *      .cath((error) => processError(error, state));
+ *    })
+ *   };
+ *  inputForm.addListener(getFormHandler(watchedState));
+ *
+ *  const checkFeedsUpdate = (state) => {
+ *    Promise.all(state.feeds.map((feed) => (
+ *      getHtml(feed.link)
+ *        .then((recaivedHtml) => parse(recaivedHtml))
+ *        .then((parsedData) => processPosts(parsedData, state))
+ *        .cath((error) => processError(error, state));
+ *    )))
+ *    .then((error) => {
+ *      console.log('updating error: ', error);
+ *      setTimeout(checkFeedsUpdate, 5000, state);
+ *    });
+ *  });
+ *
+ *  checkFeedsUpdate(watchedState);
+ */
   document.querySelector('form')
     .addEventListener('submit', (e) => {
       e.preventDefault();
-      state.rssLink = e.target.querySelector('#url-input').value;
       state.processState = 'validating';
-      const schema = yup.object().shape({
-        rssLink: yup.string()
-          .required()
-          .url()
-          .test(
-            'isNewUrl',
-            'exists',
-            (testUrl, { parent }) => {
-              const { feeds } = parent;
-              return !feeds.some(({ url }) => url === testUrl);
-            },
-          ),
-      });
-      schema
-        .validate(state, { strict: true, abortEarly: false })
-        .then((/* stateObject */) => {
-          // console.log('schema validate then, stateObject: ', stateObject);
+      const rssUrl = e.target.querySelector('#url-input').value;
+      validate(rssUrl, state.feeds)
+        .then((validUrl) => {
           state.validationState = 'valid';
           state.processState = 'sending';
-          const url = state.rssLink;
-          axios.get(proxify(url))
-            .then(({ data }) => {
-              // console.log('downloaded, parse data: ', data);
-              state.processState = 'downloaded';
-              return parse(data);
-            })
-            .then((parsedData) => {
-              if (!parsedData) {
-                // console.log('parsedData: ', parsedData);
-                state.processState = 'parserror';
-                throw new Error('parserror');
-              }
-              // console.log('..parsing complete; parsedData: ', parsedData);
-              const { title, description, posts } = parsedData;
-              state.feeds.push({ url, title, description });
-              state.posts = [
-                ...state.posts,
-                ...posts.map((post) => ({ ...post, viewed: false })),
-              ];
-              state.rssLink = '';
-              state.processState = 'success';
-              state.validationState = null;
-            })
-            .catch(({ message }) => {
-              if (message === 'parserror') {
-                state.processState = 'parserror';
-                return;
-              }
-              state.processState = 'failure';
-              console.log(`axios.get cath: ${message}`);
-            });
+          return axios.get(proxify(validUrl));
+        })
+        .then(({ data }) => {
+          console.log('downloaded, parse data: ', data);
+          state.processState = 'downloaded';
+          return parse(data);
+        })
+        .then((parsedData) => {
+          console.log('..parsing complete; parsedData: ', parsedData);
+          const { title, description, posts } = parsedData;
+          state.feeds.push({ url: rssUrl, title, description });
+          state.pointerToNewPosts = state.posts.length;
+          state.posts = [
+            ...state.posts,
+            ...posts,
+          ];
+          state.processState = 'success';
+          state.validationState = null;
         })
         .catch((error) => {
-          console.log('schema validate catch: ', error);
+          // console.error('catch: ', error);
           let errorMessage = 'unknown';
           switch (typeof error) {
             case 'object':
@@ -142,6 +145,12 @@ export default () => {
               break;
             case 'required':
               state.validationState = 'required';
+              break;
+            case 'parserror':
+              state.processState = 'parserror';
+              break;
+            case 'Network Error':
+              state.processState = 'failure';
               break;
             default:
               console.log('schema validate catch, switch(errorMessage) default: ', errorMessage);

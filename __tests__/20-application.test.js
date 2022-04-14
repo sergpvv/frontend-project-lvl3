@@ -1,5 +1,4 @@
 // @ts-check
-
 import '@testing-library/jest-dom';
 
 import { URL } from 'url';
@@ -44,7 +43,6 @@ const getResponseHandler = (url, data) => rest.get(corsProxyApi, (req, res, ctx)
   const paramUrl = req.url.searchParams.get('url');
   if (paramUrl !== url) {
     console.error('Expect proxified url to have "url" param with correct url');
-    console.log(`!!!------------------------paramUrl: ${paramUrl} !== ${url}`);
     return res(ctx.status(500));
   }
 
@@ -79,7 +77,7 @@ beforeEach(async () => {
 afterEach(() => {
   server.resetHandlers();
 });
-/*
+
 test('adding', async () => {
   const handler = getResponseHandler(rssUrl, rss1);
   server.use(handler);
@@ -190,7 +188,7 @@ describe('load feeds', () => {
     expect(await screen.findByRole('link', { name: /Traversal \/ Python: Деревья/i })).toBeInTheDocument();
   });
 });
-*/
+
 test('modal', async () => {
   const handler = getResponseHandler(rssUrl, rss1);
   server.use(handler);
