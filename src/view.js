@@ -122,10 +122,10 @@ const renderPosts = (state, i18nView) => {
           modal.setAttribute('aria-hidden', 'true');
           modal.style.display = 'none';
           modal.className = 'modal fade';
-        body.classList.remove('modal-open');
-        body.removeAttribute('data-bs-overflow');
-        body.removeAttribute('data-bs-padding-right');
-        body.removeAttribute('style');
+          body.classList.remove('modal-open');
+          body.removeAttribute('data-bs-overflow');
+          body.removeAttribute('data-bs-padding-right');
+          body.removeAttribute('style');
         });
       });
       modal.removeAttribute('aria-hidden');
