@@ -27,12 +27,12 @@ const failed = (state) => {
   state.uiState.formFilling = true;
   const { error } = state;
   const isNetworkError = error === 'Network Error';
-  const isKnown = error in [
+  const isKnown = [
     'required',
     'invalid',
     'exists',
     'parserror',
-  ];
+  ].includes(error);
   const isUnknown = !(isNetworkError && isKnown);
   if (isUnknown) {
     state.uiState.feedback.key = 'unknown';
@@ -42,7 +42,7 @@ const failed = (state) => {
   state.uiState.feedback.style = 'danger';
   const key = isNetworkError ? 'failure' : error;
   state.uiState.feedback.key = key;
-  if (key in ['required', 'invalid', 'exists']) {
+  if (['required', 'invalid', 'exists'].includes(key)) {
     state.validationState = key;
   }
 };
@@ -57,6 +57,6 @@ const handleProcess = {
 };
 
 export default (state, processState) => {
-  state.processState = processState;
   handleProcess[processState](state);
+  state.processState = processState;
 };

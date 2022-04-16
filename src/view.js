@@ -162,9 +162,6 @@ export default (state, i18n) => {
           input.readOnly = !value;
           if (value) input.value = '';
           break;
-        case 'uiState.state.uiState.feedback':
-          renderFeedback(value, i18n);
-          break;
         case 'validationState':
           switch (value) {
             case 'required':
@@ -176,13 +173,45 @@ export default (state, i18n) => {
               break;
             case 'invalid':
               input.className.replace('is-valid', 'is-invalid');
+              renderFeedback(state.uiState.feedback, i18n);
               break;
             case null:
               input.classList.remove('is-valid', 'is-invalid');
-              input.value = '';
+              renderFeedback(state.uiState.feedback, i18n);
               break;
             default:
               console.error('validationState switch(value) default: ', value);
+          }
+          break;
+        case 'processState':
+          switch (value) {
+            case 'filling':
+              addButton.disabled = false;
+              input.readOnly = false;
+              break;
+            case 'validating':
+              addButton.disabled = true;
+              input.readOnly = true;
+              break;
+            case 'sending':
+              renderFeedback(state.uiState.feedback, i18n);
+              break;
+            case 'downloaded':
+              renderFeedback(state.uiState.feedback, i18n);
+              break;
+            case 'processed':
+              renderFeedback(state.uiState.feedback, i18n);
+              input.value = '';
+              addButton.disabled = false;
+              input.readOnly = false;
+              break;
+            case 'failed':
+              renderFeedback(state.uiState.feedback, i18n);
+              addButton.disabled = false;
+              input.readOnly = false;
+              break;
+            default:
+              console.error('processState switch(value) default: ', value);
           }
           break;
         case 'posts':
