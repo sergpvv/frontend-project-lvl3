@@ -10,28 +10,17 @@ const setAttributes = (element, ...attributes) => {
   });
 };
 
-const renderFeedback = (message, i18n) => {
+const renderFeedback = (value, i18n) => {
   const feedback = document.querySelector('.feedback');
-  if (message === 'valid') {
+  if (!value) {
     feedback.textContent = '';
     return;
   }
-  const types = {
-    required: 'danger',
-    invalid: 'danger',
-    exists: 'danger',
-    parserror: 'danger',
-    success: 'success',
-    failure: 'danger',
-    validating: 'info',
-    sending: 'info',
-    downloaded: 'info',
-    unknown: 'secondary',
-  };
-  feedback.textContent = i18n.t(message);
+  const { style, key } = value;
+  feedback.textContent = i18n.t(key);
   const classes = ['secondary', 'info', 'success', 'danger'];
   feedback.classList.remove(...classes.map((name) => `text-${name}`));
-  feedback.classList.add(`text-${types[message]}`);
+  feedback.classList.add(`text-${style}`);
 };
 
 const renderFeeds = (feeds) => {
@@ -168,18 +157,22 @@ export default (state, i18n) => {
     (path, value) => {
       console.log(`path: ${path}; value: ${value}`);
       switch (path) {
-        case 'lockInput':
-          addButton.disabled = value;
-          input.readOnly = value;
+        case 'uiState.formFilling':
+          addButton.disabled = !value;
+          input.readOnly = !value;
+          if (value) input.value = '';
+          break;
+        case 'uiState.state.uiState.feedback':
+          renderFeedback(value, i18n);
           break;
         case 'validationState':
-          renderFeedback(value, i18n);
           switch (value) {
             case 'required':
               input.className.replace('is-valid', 'is-invalid');
               break;
             case 'valid':
               input.className.replace('is-invalid', 'is-valid');
+              renderFeedback(null);
               break;
             case 'invalid':
               input.className.replace('is-valid', 'is-invalid');
@@ -188,15 +181,9 @@ export default (state, i18n) => {
               input.classList.remove('is-valid', 'is-invalid');
               input.value = '';
               break;
-            case 'exists':
-              input.value = '';
-              break;
             default:
               console.error('validationState switch(value) default: ', value);
           }
-          break;
-        case 'processState':
-          renderFeedback(value, i18n);
           break;
         case 'posts':
           renderPosts(state, i18n.t('view'));
