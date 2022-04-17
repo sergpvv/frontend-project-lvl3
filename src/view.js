@@ -1,8 +1,9 @@
 import onChange from 'on-change';
+import { getViewButtonHandler } from './handlers.js';
 
-// const removeChilds = (element) => {
-//  while (element.firstChild && element.removeChild(element.firstChild));
-// };
+const removeChilds = (element) => {
+  while (element.firstChild && element.removeChild(element.firstChild));
+};
 
 const setAttributes = (element, ...attributes) => {
   attributes.forEach(([name, value]) => {
@@ -44,18 +45,12 @@ const renderFeeds = (feeds) => {
     li.append(p);
     ul.append(li);
   });
-  // feedsParent.querySelector('div.card').append(ul);
 };
 
 const renderPosts = (state, i18nView) => {
   const aPostAttributes = [
     ['target', '_blank'],
     ['rel', 'noopener noreferrer'],
-  ];
-  const aPostClass = 'fw-bold';
-  const aPostViewedClasses = [
-    'fw-normal',
-    'link-secondary',
   ];
   const liPostClasses = [
     'list-group-item',
@@ -66,6 +61,7 @@ const renderPosts = (state, i18nView) => {
     'border-end-0',
   ];
   const buttonPostAttributes = [
+
     ['type', 'button'],
     ['data-bs-toggle', 'modal'],
     ['data-bs-target', '#modal'],
@@ -76,24 +72,28 @@ const renderPosts = (state, i18nView) => {
     'btn-sm',
   ];
   const postsParent = document.querySelector('.posts');
+
   let ul = postsParent.querySelector('ul');
   if (!ul) {
     ul = document.createElement('ul');
     ul.classList.add('list-group', 'border-0', 'rounded-0');
     postsParent.querySelector('.card').append(ul);
   }
+  removeChilds(ul);
+  ul.classList.add('list-group', 'border-0', 'rounded-0');
+
   const { posts } = state;
   posts.forEach((post, index) => {
-    if (index < state.pointerToNewPosts) return;
-    const {
-      title, description, link,
-    } = post;
+    // if (index < state.pointerToNewPosts) return;
+    const { title, link } = post;
 
     const li = document.createElement('li');
     li.classList.add(...liPostClasses);
 
     const a = document.createElement('a');
-    a.classList.add(aPostClass);
+    a.className = (state.uiState.viewed.length > 0) && state.uiState.viewed[index]
+      ? 'fw-normal link-secondary'
+      : 'fw-bold';
     setAttributes(a, ['href', link], ...aPostAttributes, ['data-id', index]);
     a.textContent = title;
     li.append(a);
@@ -103,50 +103,11 @@ const renderPosts = (state, i18nView) => {
     button.classList.add(...buttonPostClasses);
     button.textContent = i18nView;
 
-    const modal = document.querySelector('#modal');
-    const body = document.querySelector('body');
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const { target } = e;
-      const aPostEl = target.previousSibling;
-      const getElement = (selector) => modal.querySelector(selector);
-      const modalTitle = getElement('.modal-title');
-      modalTitle.textContent = title;
-      const modalBody = getElement('.modal-body');
-      modalBody.textContent = description;
-      const modalAButton = getElement('a.btn');
-      modalAButton.setAttribute('href', link);
-      const modalCloseButtons = modal.querySelectorAll('button[type="button"]');
-      modalCloseButtons.forEach((modalCloseButton) => {
-        modalCloseButton.addEventListener('click', (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          modal.setAttribute('aria-hidden', 'true');
-          modal.style.display = 'none';
-          modal.className = 'modal fade';
-          body.classList.remove('modal-open');
-          body.removeAttribute('data-bs-overflow');
-          body.removeAttribute('data-bs-padding-right');
-          body.removeAttribute('style');
-        });
-      });
-      modal.removeAttribute('aria-hidden');
-      modal.setAttribute('aria-modal', 'true');
-      body.classList.add('modal-open');
-      body.setAttribute('data-bs-overflow', 'hidden');
-      body.setAttribute('data-bs-padding-right', '0px');
-      body.style = 'overflow: hidden; padding-right: 0px;';
-      modal.style.display = 'block';
-      modal.className = 'modal fade show';
-      // const id = target.getAttribute('data-id');
-      // state.posts[id].viewed = true;
-      aPostEl.classList.remove(aPostClass);
-      aPostEl.classList.add(...aPostViewedClasses);
-    });
+    button.addEventListener('click', getViewButtonHandler(state, post));
     li.append(button);
     ul.append(li);
   });
+  postsParent.querySelector('.card').append(ul);
 };
 
 export default (state, i18n) => {
@@ -157,11 +118,6 @@ export default (state, i18n) => {
     (path, value) => {
       console.log(`path: ${path}; value: ${value}`);
       switch (path) {
-        case 'uiState.formFilling':
-          addButton.disabled = !value;
-          input.readOnly = !value;
-          if (value) input.value = '';
-          break;
         case 'validationState':
           switch (value) {
             case 'required':
@@ -183,15 +139,21 @@ export default (state, i18n) => {
               console.error('validationState switch(value) default: ', value);
           }
           break;
+        case 'uiState.formDisabled':
+          addButton.disabled = value;
+          input.readOnly = value;
+          break;
         case 'processState':
           switch (value) {
             case 'filling':
-              addButton.disabled = false;
-              input.readOnly = false;
+              console.log(value);
+              // addButton.disabled = false;
+              // input.readOnly = false;
               break;
             case 'validating':
-              addButton.disabled = true;
-              input.readOnly = true;
+              console.log(value);
+              // addButton.disabled = true;
+              // input.readOnly = true;
               break;
             case 'sending':
               renderFeedback(state.uiState.feedback, i18n);
@@ -202,13 +164,13 @@ export default (state, i18n) => {
             case 'processed':
               renderFeedback(state.uiState.feedback, i18n);
               input.value = '';
-              addButton.disabled = false;
-              input.readOnly = false;
+              // addButton.disabled = false;
+              // input.readOnly = false;
               break;
             case 'failed':
               renderFeedback(state.uiState.feedback, i18n);
-              addButton.disabled = false;
-              input.readOnly = false;
+              // addButton.disabled = false;
+              // input.readOnly = false;
               break;
             default:
               console.error('processState switch(value) default: ', value);
@@ -219,6 +181,12 @@ export default (state, i18n) => {
           break;
         case 'feeds':
           renderFeeds(state.feeds);
+          break;
+        case 'uiState.feedback.style':
+          console.log('uiState.feedback.style: ', value);
+          break;
+        case 'uiState.feedback.key':
+          console.log('uiState.feedback.key: ', value);
           break;
         default:
           console.error('switch(path) default: ', path);

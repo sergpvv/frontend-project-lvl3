@@ -5,6 +5,6 @@ export default (url) => {
   proxifiedUrl.searchParams.append('url', url);
   const result = proxifiedUrl.toString();
   // `${corsProxy}/get?${url}&disableCache=true`;//proxifiedUrl.toString();
-  // console.log(`proxifiedUrl: ${proxifiedUrl}; toString: ${result}`);
+  console.log(`!!!--------------------> proxifiedUrl: ${proxifiedUrl}; toString: ${result}`);
   return result;
 };

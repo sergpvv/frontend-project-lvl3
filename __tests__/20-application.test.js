@@ -42,7 +42,8 @@ const getResponseHandler = (url, data) => rest.get(corsProxyApi, (req, res, ctx)
 
   const paramUrl = req.url.searchParams.get('url');
   if ((url !== '') && (paramUrl !== url)) {
-    console.error('Expect proxified url to have "url" param with correct url');
+    // console.error('Expect proxified url to have "url" param with correct url');
+    console.error(`!!!-----------> paramUrl: ${paramUrl}; url: ${url}`);
     return res(ctx.status(500));
   }
 

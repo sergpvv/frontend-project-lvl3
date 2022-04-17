@@ -21,11 +21,11 @@ const checkFeedsUpdate = (state) => {
     axios.get(proxify(url))
       .then(({ data }) => parse(data))
       .then(({ posts }) => processPosts(posts, state))
-      .catch((error) => {
-        console.error('checkFeedsUpdate catch error: ', error);
-      })
   )))
-    .then(() => setTimeout(checkFeedsUpdate, 5000, state));
+    .then(() => setTimeout(checkFeedsUpdate, 5000, state))
+    .catch((error) => {
+      console.error('checkFeedsUpdate catch error: ', error);
+    });
 };
 
 export default () => {
@@ -60,12 +60,12 @@ export default () => {
       uiState: {
         modalVisibility: 'hidden', // shown
         modalContainsPost: null, // index of post
-        formFilling: true,
+        formDisabled: false,
         feedback: {
           style: null, // danger success info secondary
           key: null, // required valid invalid exists parserror failure (network error) unknown
         },
-        viewedPosts: [], // [0: true, 1: false, ...]
+        viewed: [], // [0: true, 1: false, ...]
       },
 
       feeds: [],
@@ -93,7 +93,7 @@ export default () => {
         // console.log('..parsing complete; parsedData: ', parsedData);
         const { title, description, posts } = parsedData;
         state.feeds.push({ url: rssUrl, title, description });
-        state.pointerToNewPosts = state.posts.length;
+        // state.pointerToNewPosts = state.posts.length;
         state.posts.push(...posts);
         handleProcessState(state, 'processed');
       })
