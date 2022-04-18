@@ -4,40 +4,39 @@ on:
   - push
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
 
   strategy:
-      matrix:
-        node-version: [16]
+    matrix:
+      node-version: [16]
 
   steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
 
-      - name: install
-        run: |
-          make install
-        env:
-          CI: true
+    - name: install
+      run: |
+        make install
+      env:
+        CI: true
 
-      - name: run linter
-        run: |
-          make lint
+    - name: run linter
+      run: |
+        make lint
 
-      - name: run tests
-        run: |
-          make test
+    - name: run tests
+      run: |
+        make test
 
-      - name: tests coverage
-        uses: paambaati/codeclimate-action@v3
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        with:
-          coverageCommand: make test-coverage
-          debug: true
+    - name: tests coverage
+      uses: paambaati/codeclimate-action@v3
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+      with:
+        coverageCommand: make test-coverage
+        debug: true
