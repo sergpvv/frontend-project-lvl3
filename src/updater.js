@@ -18,7 +18,9 @@ const checkFeedsUpdate = (state) => {
     .catch((error) => {
       console.error('checkFeedsUpdate catch error: ', error);
     })))
-    .then(() => setTimeout(checkFeedsUpdate, 5000, state));
+    .then(() => {
+      setTimeout(checkFeedsUpdate, 5000, state);
+    });
 };
 
 export default checkFeedsUpdate;

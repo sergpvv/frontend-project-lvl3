@@ -1,13 +1,15 @@
 const filling = (state) => {
-  state.uiState.formDisabled = false;
+  state.uiState.form.disabled = false;
+  // state.uiState.form.border = 'none';
 };
 
 const validating = (state) => {
-  state.uiState.formDisabled = true;
+  state.uiState.form.disabled = true;
 };
 
 const sending = (state) => {
   state.validationState = 'valid';
+  state.uiState.form.border = 'valid';
   state.uiState.feedback.style = 'info';
   state.uiState.feedback.key = 'sending';
 };
@@ -21,11 +23,10 @@ const processed = (state) => {
   state.uiState.feedback.style = 'success';
   state.uiState.feedback.key = 'success';
   state.validationState = null;
-  state.uiState.formDisabled = false;
+  filling(state);
 };
 
 const failed = (state) => {
-  state.uiState.formDisabled = false;
   const { error } = state;
   const isNetworkError = error === 'Network Error';
   const isKnown = [
@@ -38,6 +39,7 @@ const failed = (state) => {
   if (isUnknown) {
     state.uiState.feedback.key = 'unknown';
     state.uiState.feedback.style = 'secondary';
+    filling(state);
     return;
   }
   state.uiState.feedback.style = 'danger';
@@ -45,7 +47,9 @@ const failed = (state) => {
   state.uiState.feedback.key = key;
   if (['required', 'invalid', 'exists'].includes(key)) {
     state.validationState = key;
+    state.uiState.form.border = 'invalid';
   }
+  filling(state);
 };
 
 const handleProcess = {

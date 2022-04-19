@@ -1,4 +1,5 @@
-import getViewButtonHandler from './handlers/view_button.js';
+import { getViewButtonHandler } from './handlers/buttons.js';
+// import renderModal from './renderers/modal.js';
 
 const removeChilds = (element) => {
   while (element.firstChild && element.removeChild(element.firstChild));
@@ -90,9 +91,32 @@ export const renderPosts = (state, i18nPosts, i18nView) => {
     setAttributes(button, ...buttonAttributes, ['data-id', i]);
     button.classList.add(...buttonClasses);
     button.textContent = i18nView;
-    button.addEventListener('click', getViewButtonHandler(state, post));
+    button.addEventListener('click', getViewButtonHandler(state));
     li.append(button);
     ul.append(li);
     // i -= 1;
   });
+};
+/*
+export const markViewedPost = (id) => {
+  const postElement = document.querySelector(`.posts a[data-id="${id}"]`);
+  postElement.className = 'fw-normal link-secondary';
+};
+*/
+export const renderBorder = (key) => {
+  const input = document.querySelector('#url-input');
+  input.classList.add('is-valid', 'is-invalid');
+  switch (key) {
+    case 'none':
+      input.classList.remove('is-valid', 'is-invalid');
+      break;
+    case 'valid':
+      input.classList.remove('is-invalid');
+      break;
+    case 'invalid':
+      input.classList.remove('is-valid');
+      break;
+    default:
+      console.error(`renderBorder unknown key: ${key}`);
+  }
 };
