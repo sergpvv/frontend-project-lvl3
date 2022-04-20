@@ -7,7 +7,6 @@ import { processPosts } from '../updater.js';
 
 export default (state) => (e) => {
   e.preventDefault();
-  state.counter += 1;
   handleProcessState(state, 'validating');
   const rssUrl = e.target.querySelector('#url-input').value;
   validate(rssUrl, state.feeds)

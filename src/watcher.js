@@ -19,9 +19,6 @@ export default (state, i18n) => {
       // console.log(`path: ${path}; value: ${JSON.stringify(value, null, '  ')}`);
       // console.log(`onChange path: ${path}`);
       switch (path) {
-        case 'counter':
-          console.log(`!!!--------------> ${value} <--------------!!!`);
-          break;
         case 'validationState':
           // console.log('validationState', value);
           break;
@@ -53,12 +50,6 @@ export default (state, i18n) => {
               break;
             case 'validating':
               // console.log('processState:', value);
-              console.log(
-                'validating, feeds:\t',
-                JSON.stringify(state.feeds, null, '  '),
-                '\tposts:',
-                JSON.stringify(state.posts, null, '  '),
-              );
               break;
             case 'sending':
               // console.log('processState:', value);
@@ -73,12 +64,15 @@ export default (state, i18n) => {
               // renderFeedback(state.uiState.feedback, i18n);
               input.value = '';
               renderBorder('none');
-              console.log(
-                'processed, feeds:\t',
-                JSON.stringify(state.feeds, null, '  '),
-                '\tposts:',
-                JSON.stringify(state.posts, null, '  '),
-              );
+              renderFeeds(state.feeds, i18n.t('feeds'));
+              renderPosts(state, i18n.t('posts'), i18n.t('view'));
+              /* console.log(
+               * 'processed,\t  feeds:',
+               * JSON.stringify(state.feeds, null, '  '),
+               * '\t  posts:',
+               * JSON.stringify(state.posts, null, '  '),
+               *);
+               */
               break;
             case 'failed':
               // console.log('processState:', value);
@@ -91,11 +85,11 @@ export default (state, i18n) => {
           break;
         case 'posts':
           // console.log(JSON.stringify(state.posts, null, '  '));
-          renderPosts(state, i18n.t('posts'), i18n.t('view'));
+          // renderPosts(state, i18n.t('posts'), i18n.t('view'));
           break;
         case 'feeds':
           // console.log(JSON.stringify(state.feeds, null, '  '));
-          renderFeeds(state.feeds, i18n.t('feeds'));
+          // renderFeeds(state.feeds, i18n.t('feeds'));
           break;
         case 'uiState.feedback.style':
           // console.log('uiState.feedback.style:', value);

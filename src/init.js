@@ -4,7 +4,7 @@ import ru from './locales/ru.js';
 import localizeApp from './localizer.js';
 import getFormSubmitHandler from './handlers/main.js';
 import checkFeedsUpdate from './updater.js';
-// import state from './state.js';
+import State from './state.js';
 import { getCloseModalButtonHandler } from './handlers/buttons.js';
 
 export default () => {
@@ -16,6 +16,7 @@ export default () => {
     },
   });
   localizeApp(i18next);
+  /*
   const watchedState = watch({
     processState: null,
     /* filling ->
@@ -23,7 +24,7 @@ export default () => {
    * sending (-> failed [network error] -> filling) ->
    * downloaded (-> failed [parsing error] -> filling) ->
    * processed -> filling
-*/
+
     validationState: null, // valid invalid exists required
     error: '', // required, invalid, exists, parserror, network error
     uiState: {
@@ -45,12 +46,12 @@ export default () => {
     posts: [],
     counter: 0,
   }, i18next);
-  // const watchedState = watch(state, i18next);
-  // localizeApp(i18next, watchedState);
+*/
+  const watchedState = watch(new State(), i18next);
   document.querySelector('form')
     .addEventListener('submit', getFormSubmitHandler(watchedState));
   document.querySelectorAll('#modal button[type="button"').forEach((button) => {
     button.addEventListener('click', getCloseModalButtonHandler(watchedState));
   });
-  // checkFeedsUpdate(watchedState);
+  checkFeedsUpdate(watchedState);
 };
