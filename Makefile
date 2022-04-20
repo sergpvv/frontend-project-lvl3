@@ -4,8 +4,7 @@ develop:
 start:
 	npm start
 
-install:
-	install-deps
+install: install-deps
 	npx simple-git-hooks
 
 install-deps:
