@@ -5,7 +5,11 @@ start:
 	npm start
 
 install:
-	npm install
+	npm install-deps
+	npx simple-git-hooks
+
+install-deps:
+	npm ci
 
 build:
 	rm -rf dist
@@ -15,7 +19,7 @@ lint:
 	npx eslint . --fix
 
 test:
-	npm test -- -u
+	npm test
 
 test-coverage:
 	npm test -- --coverage --coverageProvider=v8

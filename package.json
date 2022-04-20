@@ -7,10 +7,16 @@
     "aggregator"
   ],
   "main": "src/init.js",
+  "simple-git-hooks": {
+    "pre-push": "make lint"
+  },
+  "engines": {
+    "node": ">=16"
+  },
   "type": "module",
   "scripts": {
     "build": "webpack",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --colors"
+    "test": "npx jest --bail"
   },
   "repository": {
     "type": "git",
@@ -31,7 +37,7 @@
     "@testing-library/dom": "^8.13.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/user-event": "^14.1.1",
-    "babel-loader": "^8.2.4",
+    "babel-loader": "^8.2.5",
     "babel-plugin-transform-import-meta": "^2.1.1",
     "css-loader": "^6.7.1",
     "eslint": "^8.13.0",
@@ -45,8 +51,10 @@
     "jest": "^27.5.1",
     "jest-cli": "^27.5.1",
     "msw": "^0.39.2",
+    "npm-check-updates": "^12.5.9",
     "path": "^0.12.7",
     "read-package-json-fast": "^2.0.3",
+    "simple-git-hooks": "^2.7.0",
     "style-loader": "^3.3.1",
     "url": "^0.11.0",
     "webpack": "^5.72.0",
