@@ -22,6 +22,7 @@ export const renderFeedback = (value, i18n) => {
   const classes = ['secondary', 'info', 'success', 'danger'];
   feedback.classList.remove(...classes.map((name) => `text-${name}`));
   feedback.classList.add(`text-${style}`);
+  // console.log(feedback.outerHTML);
 };
 
 export const renderFeeds = (feeds, i18nFeeds) => {
@@ -42,6 +43,7 @@ export const renderFeeds = (feeds, i18nFeeds) => {
     li.append(p);
     ul.append(li);
   });
+  // console.log(feedsParent.outerHTML);
 };
 
 export const renderPosts = (state, i18nPosts, i18nView) => {
@@ -59,6 +61,7 @@ export const renderPosts = (state, i18nPosts, i18nView) => {
   ];
   const buttonAttributes = [
     ['type', 'button'],
+    ['role', 'button'],
     ['data-bs-toggle', 'modal'],
     ['data-bs-target', '#modal'],
   ];
@@ -96,6 +99,7 @@ export const renderPosts = (state, i18nPosts, i18nView) => {
     ul.append(li);
     // i -= 1;
   });
+  // console.log(postsParent.outerHTML);
 };
 /*
 export const markViewedPost = (id) => {

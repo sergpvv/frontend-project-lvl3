@@ -20,13 +20,14 @@ const downloaded = (state) => {
 };
 
 const processed = (state) => {
+  state.uiState.form.disabled = false;
   state.uiState.feedback.style = 'success';
   state.uiState.feedback.key = 'success';
   state.validationState = null;
-  filling(state);
 };
 
 const failed = (state) => {
+  state.uiState.form.disabled = false;
   const { error } = state;
   const isNetworkError = error === 'Network Error';
   const isKnown = [
@@ -39,7 +40,6 @@ const failed = (state) => {
   if (isUnknown) {
     state.uiState.feedback.key = 'unknown';
     state.uiState.feedback.style = 'secondary';
-    filling(state);
     return;
   }
   state.uiState.feedback.style = 'danger';
@@ -49,7 +49,6 @@ const failed = (state) => {
     state.validationState = key;
     state.uiState.form.border = 'invalid';
   }
-  filling(state);
 };
 
 const handleProcess = {
