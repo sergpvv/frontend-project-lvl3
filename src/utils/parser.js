@@ -1,9 +1,7 @@
-export default ({ contents }) => {
-  const doc = (new DOMParser()).parseFromString(contents, 'text/xml');
-  // console.log((new XMLSerializer()).serializeToString(doc));
+export default (str) => {
+  const doc = (new DOMParser()).parseFromString(str, 'text/xml');
   const isParserror = doc.documentElement.nodeName === 'parsererror';
   if (isParserror || doc.querySelector('parsererror')) {
-    // console.log((new XMLSerializer()).serializeToString(doc));
     throw new Error('parserror');
   }
   const getContent = (element, name) => element.querySelector(name).textContent;

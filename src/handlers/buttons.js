@@ -11,7 +11,5 @@ export const getViewButtonHandler = (state) => (e) => {
 
 export const getCloseModalButtonHandler = (state) => (e) => {
   e.preventDefault();
-  state.uiState.viewed[state.uiState.modal.postId] = true;
-  // state.uiState.modal.postId = null;
   state.uiState.modal.show = false;
 };

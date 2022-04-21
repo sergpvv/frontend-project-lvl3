@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
   <title>Hexlet Frontend Project 3</title>
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column min-vh-100" style="display: none">
   <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modal" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -69,4 +69,5 @@
     </div>
   </footer>
 </body>
+<script>document.addEventListener("DOMContentLoaded", () => { document.querySelector("body").style.display = "block"; });</script>
 </html>

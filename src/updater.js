@@ -11,15 +11,18 @@ export const processPosts = (state, posts) => {
 };
 
 const checkFeedsUpdate = (state) => {
+  state.updateState = 'begined';
   Promise.all(state.feeds.map(({ url }) => axios
     .get(proxify(url))
-    .then(({ data }) => parse(data))
-    .then(({ posts }) => processPosts(state, posts))
-    .then(() => setTimeout(checkFeedsUpdate, 5000, state))
+    .then(({ data: { contents } }) => parse(contents))
+    .then(({ posts }) => {
+      processPosts(state, posts);
+      state.updateState = 'finished';
+    })
     .catch((error) => {
-      console.error('checkFeedsUpdate catch error: ', error);
-    })));
-    // .then(() => setTimeout(checkFeedsUpdate, 5000, state));
+      console.error('checkFeedsUpdate failed with error:', error);
+    })))
+    .then(() => setTimeout(checkFeedsUpdate, 5000, state));
 };
 
 export default checkFeedsUpdate;
