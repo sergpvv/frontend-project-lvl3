@@ -27,6 +27,29 @@ export default () => ({
   posts: [],
 });
 
+const handleError = (state) => {
+  const { error } = state;
+  const isNetworkError = error === 'Network Error';
+  const isKnown = [
+    'required',
+    'invalid',
+    'exists',
+    'parserror',
+  ].includes(error);
+  const isUnknown = !(isNetworkError || isKnown);
+  if (isUnknown) {
+    state.uiState.feedback.key = 'unknown';
+    state.uiState.feedback.style = 'secondary';
+    return;
+  }
+  state.uiState.feedback.style = 'danger';
+  const key = isNetworkError ? 'failure' : error;
+  state.uiState.feedback.key = key;
+  if (['required', 'invalid', 'exists'].includes(key)) {
+    state.uiState.form.border = 'invalid';
+  }
+};
+
 export const handleProcessState = (state, processState) => {
   switch (processState) {
     case 'validating':
@@ -49,26 +72,7 @@ export const handleProcessState = (state, processState) => {
       break;
     case 'failed':
       state.uiState.form.disabled = false;
-      const { error } = state;
-      const isNetworkError = error === 'Network Error';
-      const isKnown = [
-        'required',
-        'invalid',
-        'exists',
-        'parserror',
-      ].includes(error);
-      const isUnknown = !(isNetworkError || isKnown);
-      if (isUnknown) {
-        state.uiState.feedback.key = 'unknown';
-        state.uiState.feedback.style = 'secondary';
-        return;
-      }
-      state.uiState.feedback.style = 'danger';
-      const key = isNetworkError ? 'failure' : error;
-      state.uiState.feedback.key = key;
-      if (['required', 'invalid', 'exists'].includes(key)) {
-        state.uiState.form.border = 'invalid';
-      }
+      handleError(state);
       break;
     default:
       console.error(`unknown processState: ${processState}`);
