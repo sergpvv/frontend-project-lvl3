@@ -4,7 +4,7 @@ export default (feeds, i18nFeeds) => {
   const feedsParent = document.querySelector('.feeds');
   feedsParent.querySelector('.card-title').textContent = i18nFeeds;
   const ul = feedsParent.querySelector('ul');
-  if (ul.hasChildNodes()) removeChilds(ul);
+  removeChilds(ul);
   feeds.forEach(({ title, description }) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'border-0', 'border-end-0');

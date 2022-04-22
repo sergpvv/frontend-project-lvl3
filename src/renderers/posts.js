@@ -28,7 +28,7 @@ export default (state, i18nPosts, i18nView) => {
   const postsParent = document.querySelector('.posts');
   postsParent.querySelector('.card-title').textContent = i18nPosts;
   const ul = postsParent.querySelector('ul');
-  if (ul.hasChildNodes()) removeChilds(ul);
+  removeChilds(ul);
   // const { posts } = state;
   // const { length } = posts;
   // let i = state.posts.length - 1;

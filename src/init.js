@@ -1,4 +1,5 @@
 import i18next from 'i18next';
+import { setLocale } from 'yup';
 import watch from './watcher.js';
 import ru from './locales/ru.js';
 import localizeApp from './localizer.js';
@@ -13,6 +14,15 @@ export default () => {
     debug: false,
     resources: {
       ru,
+    },
+  });
+  setLocale({
+    mixed: {
+      test: 'exists',
+      required: 'required',
+    },
+    string: {
+      url: 'invalid',
     },
   });
   localizeApp(i18next);

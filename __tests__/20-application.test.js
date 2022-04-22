@@ -62,7 +62,6 @@ const server = setupServer();
 let user;
 
 beforeAll(() => {
-  // document.body.innerHTML = initHtml;
   server.listen({
     onUnhandledRequest: (req) => {
       console.error(`Unknown url: ${req.url.href}. Make sure you use "${corsProxyApi} and correct HTTP verb"`);
