@@ -1,13 +1,10 @@
-function CreateParseError(message) {
-  this.isParseError = true;
-  this.message = message;
-}
-
 export default (str) => {
   const doc = (new DOMParser()).parseFromString(str, 'text/xml');
   const isParserror = doc.documentElement.nodeName === 'parsererror';
   if (isParserror || doc.querySelector('parsererror')) {
-    throw new CreateParseError('parserror');
+    const error = new Error('parserror');
+    error.isParseError = true;
+    throw error;
   }
   const getContent = (element, name) => element.querySelector(name).textContent;
   const title = getContent(doc, 'title');
