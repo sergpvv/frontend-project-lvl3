@@ -51,7 +51,7 @@
     "jest": "^27.5.1",
     "jest-cli": "^27.5.1",
     "msw": "^0.39.2",
-    "npm-check-updates": "^12.5.9",
+    "npm-check-updates": "^16.7.4",
     "path": "^0.12.7",
     "read-package-json-fast": "^2.0.3",
     "simple-git-hooks": "^2.7.0",
